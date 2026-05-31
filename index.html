@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>nori99mai - サンプル v0.1</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Press+Start+2P&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brown:      #5b4636;
+      --brown-dark: #3e2f24;
+      --brown-mid:  #8b6f47;
+      --paper:      #fdfaf5;
+      --tab1:       #b58863;
+      --tab2:       #a8754d;
+      --tab3:       #8b5a2b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Caveat', cursive;
+      background: var(--paper);
+      color: var(--brown-dark);
+      overflow: hidden;
+      height: 100vh;
+    }
+    .layout {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+    }
+    /* === 左側：99の窓 + プロフィール === */
+    .left {
+      flex: 3;
+      position: relative;
+      overflow: hidden;
+    }
+    /* 動的背景：フリー素材動画クロスフェード */
+    .bg-stage {
+      position: absolute;
+      inset: 0;
+      background: #000;
+    }
+    .bg-stage video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+    }
+    .bg-stage video.active { opacity: 1; }
+    /* 紙のオーバーレイ：99の形にくり抜き */
+    .paper-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .paper-overlay svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    /* プロフィール */
+    .profile {
+      position: absolute;
+      top: 53%;
+      left: 50px;
+      z-index: 5;
+      color: var(--brown-dark);
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    .profile .name-line {
+      font-size: 38px;
+      letter-spacing: -0.5px;
+    }
+    .profile .meta-line {
+      font-size: 22px;
+      color: var(--brown);
+      margin-top: 4px;
+    }
+    .profile .meta-line.first { margin-top: 6px; }
+    /* === 右側：インデックス目次（クール・統一感） === */
+    .right {
+      flex: 0.8;
+      padding: 80px 20px 60px 50px;
+      background: var(--paper);
+      position: relative;
+      z-index: 10;
+      box-shadow: -8px 0 20px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    .tabs-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--brown);
+      margin-bottom: 20px;
+      padding-left: 4px;
+      width: 280px;
+    }
+    .tabs {
+      display: flex;
+      flex-direction: column;
+      width: 280px;
+    }
+    .tab {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      padding: 22px 6px;
+      border-bottom: 1px solid rgba(91, 70, 54, 0.2);
+      color: var(--brown-dark);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s ease;
+    }
+    .tab:first-of-type { border-top: 1px solid rgba(91, 70, 54, 0.2); }
+    .tab:hover {
+      padding-left: 16px;
+      background: rgba(91, 70, 54, 0.04);
+    }
+    .tab-num {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 13px;
+      letter-spacing: 1px;
+      color: var(--brown-dark);
+      display: inline-block;
+      min-width: 40px;
+    }
+    .tab-name {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 13px;
+      color: var(--brown);
+      flex: 1;
+      letter-spacing: 0.5px;
+    }
+    .tab-arrow {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--brown-mid);
+      font-size: 16px;
+      opacity: 0.6;
+      transition: transform 0.25s ease;
+    }
+    .tab:hover .tab-arrow { transform: translateX(4px); }
+    .tab.soon { opacity: 0.35; cursor: default; }
+    .tab.soon:hover { padding-left: 6px; background: transparent; }
+    .tab.soon .tab-arrow { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ===== 左側 ===== -->
+  <div class="left">
+
+    <!-- 動く背景：フリー素材動画クロスフェード -->
+    <div class="bg-stage" id="bgStage">
+      <video src="videos/01.mp4" muted loop playsinline preload="auto" class="active"></video>
+      <video src="videos/02.mp4" muted loop playsinline preload="auto"></video>
+      <video src="videos/03.mp4" muted loop playsinline preload="auto"></video>
+      <video src="videos/04.mp4" muted loop playsinline preload="auto"></video>
+      <video src="videos/05.mp4" muted loop playsinline preload="auto"></video>
+    </div>
+
+    <!-- 99の形にくり抜いた紙 -->
+    <div class="paper-overlay">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <mask id="cut99">
+            <rect width="100" height="100" fill="white"/>
+            <text x="12" y="50"
+                  text-anchor="start"
+                  font-family="Orbitron, Impact, sans-serif"
+                  font-weight="900"
+                  fill="black"
+                  stroke="black"
+                  stroke-width="1"
+                  paint-order="stroke fill"
+                  transform="skewX(-15)"><tspan font-size="42">99</tspan><tspan font-size="9" font-family="Press Start 2P, monospace" stroke-width="0.2" dx="2">mai</tspan></text>
+          </mask>
+        </defs>
+        <rect width="100" height="100" fill="#fdfaf5" mask="url(#cut99)"/>
+      </svg>
+    </div>
+
+    <!-- プロフィール -->
+    <div class="profile">
+      <div class="name-line">nori 99mai</div>
+      <div class="meta-line first">Japanese, LIKE: Guitar, Splatoon3</div>
+    </div>
+  </div>
+
+  <!-- ===== 右側：インデックス目次 ===== -->
+  <div class="right">
+    <div class="tabs-title">INDEX</div>
+    <div class="tabs">
+      <a class="tab soon" data-future-href="moon/">
+        <span class="tab-num">01</span>
+        <span class="tab-name">Moon</span>
+      </a>
+      <a class="tab soon">
+        <span class="tab-num">02</span>
+        <span class="tab-name">— — —</span>
+      </a>
+      <a class="tab soon">
+        <span class="tab-num">03</span>
+        <span class="tab-name">— — —</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  (function () {
+    const videos = document.querySelectorAll('#bgStage video');
+    let idx = 0;
+    videos.forEach(v => { v.play().catch(() => {}); });
+    setInterval(() => {
+      videos[idx].classList.remove('active');
+      idx = (idx + 1) % videos.length;
+      videos[idx].classList.add('active');
+    }, 7000);
+  })();
+</script>
+
+</body>
+</html>
