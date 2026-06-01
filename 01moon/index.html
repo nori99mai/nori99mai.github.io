@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#000000" />
+  <title>Moon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Pistilli&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=29" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div id="month-chip" class="hidden">
+    <span id="month-number">1</span>
+    <span id="month-name">January</span>
+  </div>
+  <div id="today-date" class="hidden" aria-hidden="true"></div>
+  <aside id="observer-panel">
+    <div id="moon-mini-wrap">
+      <canvas id="moon-mini" width="220" height="220"></canvas>
+      <button id="today-btn" type="button" aria-label="今日の月相に合わせる">
+        <span>TODAY</span>
+      </button>
+    </div>
+    <div id="country-selector">
+      <button id="current-flag" class="flag-btn flag-current" aria-label="観測国">
+        <img alt="" />
+      </button>
+      <div id="flag-menu" class="hidden"></div>
+    </div>
+  </aside>
+  <script type="module" src="main.js?v=30"></script>
+</body>
+</html>

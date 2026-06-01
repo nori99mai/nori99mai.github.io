@@ -3,23 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>nori99mai - サンプル v0.1</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Press+Start+2P&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+  <title>nori99mai</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     :root {
-      --brown:      #5b4636;
-      --brown-dark: #3e2f24;
-      --brown-mid:  #8b6f47;
-      --paper:      #fdfaf5;
-      --tab1:       #b58863;
-      --tab2:       #a8754d;
-      --tab3:       #8b5a2b;
+      --ink:        #1a1a1a;
+      --ink-soft:   #4a4a4a;
+      --paper:      #ffffff;
+      --line:       rgba(26, 26, 26, 0.15);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Caveat', cursive;
+      font-family: 'Orbitron', sans-serif;
       background: var(--paper);
-      color: var(--brown-dark);
+      color: var(--ink);
       overflow: hidden;
       height: 100vh;
     }
@@ -28,13 +25,13 @@
       height: 100vh;
       width: 100vw;
     }
-    /* === 左側：99の窓 + プロフィール === */
+    /* === 左側：99maiの窓 + プロフィール === */
     .left {
       flex: 3;
       position: relative;
       overflow: hidden;
+      background: var(--paper);
     }
-    /* 動的背景：フリー素材動画クロスフェード */
     .bg-stage {
       position: absolute;
       inset: 0;
@@ -50,7 +47,7 @@
       transition: opacity 1.5s ease-in-out;
     }
     .bg-stage video.active { opacity: 1; }
-    /* 紙のオーバーレイ：99の形にくり抜き */
+    /* 紙のオーバーレイ：99maiの形にくり抜き */
     .paper-overlay {
       position: absolute;
       inset: 0;
@@ -64,24 +61,36 @@
     /* プロフィール */
     .profile {
       position: absolute;
-      top: 53%;
+      bottom: 40px;
       left: 50px;
       z-index: 5;
-      color: var(--brown-dark);
-      font-weight: 700;
-      line-height: 1.3;
+      color: var(--ink);
+      line-height: 1.5;
     }
     .profile .name-line {
-      font-size: 38px;
-      letter-spacing: -0.5px;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 22px;
+      letter-spacing: 2px;
     }
     .profile .meta-line {
-      font-size: 22px;
-      color: var(--brown);
-      margin-top: 4px;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 400;
+      font-size: 12px;
+      letter-spacing: 3px;
+      color: var(--ink-soft);
+      margin-top: 8px;
     }
-    .profile .meta-line.first { margin-top: 6px; }
-    /* === 右側：インデックス目次（クール・統一感） === */
+    .profile a {
+      color: var(--ink);
+      text-decoration: none;
+      border-bottom: 1px solid var(--ink);
+      padding-bottom: 1px;
+      transition: opacity 0.2s ease;
+    }
+    .profile a:hover { opacity: 0.5; }
+
+    /* === 右側：インデックス目次 === */
     .right {
       flex: 0.8;
       padding: 80px 20px 60px 50px;
@@ -98,7 +107,7 @@
       font-weight: 900;
       font-size: 11px;
       letter-spacing: 4px;
-      color: var(--brown);
+      color: var(--ink);
       margin-bottom: 20px;
       padding-left: 4px;
       width: 280px;
@@ -113,35 +122,35 @@
       align-items: baseline;
       gap: 14px;
       padding: 22px 6px;
-      border-bottom: 1px solid rgba(91, 70, 54, 0.2);
-      color: var(--brown-dark);
+      border-bottom: 1px solid var(--line);
+      color: var(--ink);
       cursor: pointer;
       text-decoration: none;
       transition: all 0.25s ease;
     }
-    .tab:first-of-type { border-top: 1px solid rgba(91, 70, 54, 0.2); }
+    .tab:first-of-type { border-top: 1px solid var(--line); }
     .tab:hover {
       padding-left: 16px;
-      background: rgba(91, 70, 54, 0.04);
+      background: rgba(26, 26, 26, 0.04);
     }
     .tab-num {
       font-family: 'Press Start 2P', monospace;
       font-size: 13px;
       letter-spacing: 1px;
-      color: var(--brown-dark);
+      color: var(--ink);
       display: inline-block;
       min-width: 40px;
     }
     .tab-name {
       font-family: 'Press Start 2P', monospace;
       font-size: 13px;
-      color: var(--brown);
+      color: var(--ink-soft);
       flex: 1;
       letter-spacing: 0.5px;
     }
     .tab-arrow {
       font-family: 'Orbitron', sans-serif;
-      color: var(--brown-mid);
+      color: var(--ink-soft);
       font-size: 16px;
       opacity: 0.6;
       transition: transform 0.25s ease;
@@ -150,6 +159,33 @@
     .tab.soon { opacity: 0.35; cursor: default; }
     .tab.soon:hover { padding-left: 6px; background: transparent; }
     .tab.soon .tab-arrow { display: none; }
+
+    /* === スマホ対応 === */
+    @media (max-width: 768px) {
+      body { overflow: auto; height: auto; }
+      .layout {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+      }
+      .left {
+        flex: none;
+        width: 100%;
+        height: 60vh;
+        min-height: 400px;
+      }
+      .right {
+        flex: none;
+        width: 100%;
+        padding: 40px 24px 40px 24px;
+        align-items: stretch;
+        box-shadow: 0 -8px 20px rgba(0,0,0,0.04);
+      }
+      .tabs-title, .tabs { width: 100%; }
+      .profile { left: 24px; bottom: 24px; }
+      .profile .name-line { font-size: 18px; letter-spacing: 1.5px; }
+      .profile .meta-line { font-size: 10px; letter-spacing: 2px; }
+    }
   </style>
 </head>
 <body>
@@ -168,11 +204,11 @@
       <video src="videos/05.mp4" muted loop playsinline preload="auto"></video>
     </div>
 
-    <!-- 99の形にくり抜いた紙 -->
+    <!-- 99maiの形にくり抜いた紙 -->
     <div class="paper-overlay">
       <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
         <defs>
-          <mask id="cut99">
+          <mask id="cut99mai">
             <rect width="100" height="100" fill="white"/>
             <text x="12" y="50"
                   text-anchor="start"
@@ -182,17 +218,17 @@
                   stroke="black"
                   stroke-width="1"
                   paint-order="stroke fill"
-                  transform="skewX(-15)"><tspan font-size="42">99</tspan><tspan font-size="9" font-family="Press Start 2P, monospace" stroke-width="0.2" dx="2">mai</tspan></text>
+                  transform="skewX(-15)"><tspan font-size="42">99</tspan><tspan font-size="12" dx="2">mai</tspan></text>
           </mask>
         </defs>
-        <rect width="100" height="100" fill="#fdfaf5" mask="url(#cut99)"/>
+        <rect width="100" height="100" fill="#ffffff" mask="url(#cut99mai)"/>
       </svg>
     </div>
 
     <!-- プロフィール -->
     <div class="profile">
-      <div class="name-line">nori 99mai</div>
-      <div class="meta-line first">Japanese, LIKE: Guitar, Splatoon3</div>
+      <div class="name-line">NORI 99MAI</div>
+      <div class="meta-line">JAPANESE / LIKE: GUITAR, SPLATOON3 / SNS: <a href="https://x.com/iPtEgvY4UeJvS2M" target="_blank" rel="noopener">X &rarr;</a></div>
     </div>
   </div>
 
@@ -200,9 +236,10 @@
   <div class="right">
     <div class="tabs-title">INDEX</div>
     <div class="tabs">
-      <a class="tab soon" data-future-href="moon/">
+      <a class="tab" href="./01moon/">
         <span class="tab-num">01</span>
-        <span class="tab-name">Moon</span>
+        <span class="tab-name">MOON</span>
+        <span class="tab-arrow">&rarr;</span>
       </a>
       <a class="tab soon">
         <span class="tab-num">02</span>
