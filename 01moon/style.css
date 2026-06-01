@@ -248,38 +248,8 @@ html, body {
 }
 
 @media (max-width: 640px) {
-  #observer-panel {
-    right: 10px;
-    bottom: 10px;
-    width: 148px;
-    padding: 8px 8px 6px;
-  }
-  #moon-mini-wrap {
-    width: 132px;
-    height: 132px;
-  }
-  #moon-mini {
-    width: 132px;
-    height: 132px;
-  }
-  #today-btn {
-    width: 28px;
-    height: 28px;
-    font-size: 7.5px;
-  }
-  .flag-current {
-    width: 46px;
-    height: 30px;
-  }
-  #flag-menu {
-    grid-template-columns: repeat(5, 34px);
-    gap: 4px;
-    padding: 6px;
-  }
-  .flag-option {
-    width: 34px;
-    height: 22px;
-  }
+  /* スマホでは観測小窓が画面を圧迫するため非表示。3Dの視認性を優先 */
+  #observer-panel { display: none; }
 
   #month-number { font-size: 64px; }
   #month-name { font-size: 14px; }
