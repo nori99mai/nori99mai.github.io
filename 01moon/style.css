@@ -90,7 +90,7 @@ html, body {
   display: none;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 640px), (max-height: 500px) {
   #today-date {
     font-size: 48px;
   }
@@ -247,7 +247,7 @@ html, body {
   border-color: rgba(180, 255, 200, 0.8);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 640px), (max-height: 500px) {
   /* スマホでは観測小窓が画面を圧迫するため非表示。3Dの視認性を優先 */
   #observer-panel { display: none; }
 
