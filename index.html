@@ -43,10 +43,13 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      object-position: center center;
       opacity: 0;
       transition: opacity 1.5s ease-in-out;
     }
     .bg-stage video.active { opacity: 1; }
+    .bg-stage video:nth-child(1),
+    .bg-stage video:nth-child(2) { object-position: center 70%; }
     /* 紙のオーバーレイ：99maiの形にくり抜き */
     .paper-overlay {
       position: absolute;
