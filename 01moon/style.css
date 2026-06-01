@@ -284,3 +284,62 @@ html, body {
   #month-number { font-size: 64px; }
   #month-name { font-size: 14px; }
 }
+
+/* ============================================================
+   スマホ縦画面ガイド：3Dは横向き前提なので、縦時は全面で案内
+   ============================================================ */
+#orientation-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center,
+              rgba(10, 14, 30, 0.96) 0%,
+              rgba(0, 0, 8, 0.99) 70%);
+  color: rgba(230, 240, 255, 0.92);
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "Cormorant Garamond", serif;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+.og-inner {
+  text-align: center;
+  padding: 0 24px;
+}
+
+.og-icon {
+  font-size: 72px;
+  line-height: 1;
+  margin-bottom: 18px;
+  animation: og-rotate 2.4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes og-rotate {
+  0%, 30%   { transform: rotate(0deg); }
+  60%, 100% { transform: rotate(-90deg); }
+}
+
+.og-text {
+  font-size: 24px;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  margin-bottom: 10px;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.7);
+}
+
+.og-sub {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 14px;
+  font-style: italic;
+  letter-spacing: 0.12em;
+  opacity: 0.6;
+}
+
+/* スマホサイズかつ縦向きのときだけ表示。タブレット以上は対象外 */
+@media (orientation: portrait) and (max-width: 900px) {
+  #orientation-gate { display: flex; }
+}

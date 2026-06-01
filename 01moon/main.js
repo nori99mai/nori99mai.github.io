@@ -26,10 +26,10 @@ const EARTH_AXIAL_TILT_RAD = THREE.MathUtils.degToRad(23.44);
 const EARTH_ECCENTRICITY = 0.15;
 const MOON_INCLINATION_RAD = THREE.MathUtils.degToRad(5.145);
 
-const EARTH_ORBIT_PERIOD = 30;
-const MOON_ORBIT_PERIOD = 2.5;
-const EARTH_SPIN_PERIOD = 5;
-const SUN_SPIN_PERIOD = 12;  // 太陽の自転（実際は約25日、視認できるようデフォルメ）
+const EARTH_ORBIT_PERIOD = 60;
+const MOON_ORBIT_PERIOD = 5;
+const EARTH_SPIN_PERIOD = 10;
+const SUN_SPIN_PERIOD = 24;  // 太陽の自転（実際は約25日、視認できるようデフォルメ）
 
 // 星空は大小4レイヤーで遠近感を出す
 const STAR_LARGE_COUNT = 50;
@@ -40,7 +40,10 @@ const STAR_MICRO_COUNT = 1500;
 const STAR_FIELD_RADIUS = 160;
 
 const BODY_OPACITY = 0.62;
-const CLICK_THRESHOLD_PX = 5;
+// タップ判定：スマホで地球をフォーカス中もカメラが微小に動くため、
+// 厳しすぎるとタップが drag 扱いになる。閾値・時間どちらも余裕を持たせる
+const CLICK_THRESHOLD_PX = 14;
+const CLICK_MAX_DURATION_MS = 600;
 
 // 観測国（初期セット：北半球高/中/低緯度＋南半球中緯度）
 const COUNTRIES = [
@@ -250,37 +253,44 @@ function createSunTexture() {
   cv.width = cv.height = size;
   const ctx = cv.getContext('2d');
 
-  // ベース：均一なオレンジ〜黄色（球体ライティングは Three.js 側でやるので flat に）
-  ctx.fillStyle = '#ffb84a';
+  // ベース：濃いめのオレンジ。コントラストを強めて「太陽らしさ」を出す
+  ctx.fillStyle = '#ff8a1c';
   ctx.fillRect(0, 0, size, size);
 
-  // 1. 大規模な色のうねり（低周波ノイズ感）
-  for (let i = 0; i < 80; i++) {
+  // 1. 大規模な色のうねり（低周波ノイズ感）— 明暗のコントラストを強める
+  for (let i = 0; i < 120; i++) {
     const x = Math.random() * size;
     const y = Math.random() * size;
-    const r = 80 + Math.random() * 200;
+    const r = 100 + Math.random() * 260;
     const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
-    if (Math.random() < 0.5) {
-      grad.addColorStop(0, 'rgba(255, 220, 130, 0.45)');
-      grad.addColorStop(1, 'rgba(255, 220, 130, 0)');
+    const k = Math.random();
+    if (k < 0.4) {
+      // 明るい黄色のうねり
+      grad.addColorStop(0, 'rgba(255, 230, 150, 0.65)');
+      grad.addColorStop(1, 'rgba(255, 230, 150, 0)');
+    } else if (k < 0.75) {
+      // 濃いオレンジのうねり
+      grad.addColorStop(0, 'rgba(210, 80, 20, 0.55)');
+      grad.addColorStop(1, 'rgba(210, 80, 20, 0)');
     } else {
-      grad.addColorStop(0, 'rgba(220, 100, 30, 0.4)');
-      grad.addColorStop(1, 'rgba(220, 100, 30, 0)');
+      // 暗赤のうねり
+      grad.addColorStop(0, 'rgba(140, 35, 10, 0.45)');
+      grad.addColorStop(1, 'rgba(140, 35, 10, 0)');
     }
     ctx.fillStyle = grad;
     ctx.fillRect(x - r, y - r, r * 2, r * 2);
   }
 
   // 2. グラニュレーション（小さな粒状感を大量に重ねる）
-  for (let i = 0; i < 25000; i++) {
+  for (let i = 0; i < 40000; i++) {
     const x = Math.random() * size;
     const y = Math.random() * size;
     const r = 1 + Math.random() * 4;
     const v = Math.random();
     if (v < 0.5) {
-      ctx.fillStyle = `rgba(255, ${220 + Math.random()*35 | 0}, ${110 + Math.random()*60 | 0}, ${0.20 + Math.random() * 0.25})`;
+      ctx.fillStyle = `rgba(255, ${210 + Math.random()*45 | 0}, ${90 + Math.random()*70 | 0}, ${0.25 + Math.random() * 0.30})`;
     } else {
-      ctx.fillStyle = `rgba(${170 + Math.random()*40 | 0}, ${70 + Math.random()*40 | 0}, ${25 + Math.random()*30 | 0}, ${0.20 + Math.random() * 0.20})`;
+      ctx.fillStyle = `rgba(${150 + Math.random()*50 | 0}, ${55 + Math.random()*40 | 0}, ${15 + Math.random()*30 | 0}, ${0.25 + Math.random() * 0.25})`;
     }
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
@@ -288,26 +298,26 @@ function createSunTexture() {
   }
 
   // 3. プロミネンス（明るく光るホットスポット）
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 90; i++) {
     const x = Math.random() * size;
     const y = Math.random() * size;
-    const r = 18 + Math.random() * 50;
+    const r = 20 + Math.random() * 60;
     const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
-    grad.addColorStop(0, 'rgba(255, 245, 180, 0.55)');
-    grad.addColorStop(0.4, 'rgba(255, 200, 110, 0.30)');
+    grad.addColorStop(0, 'rgba(255, 248, 200, 0.75)');
+    grad.addColorStop(0.4, 'rgba(255, 200, 110, 0.40)');
     grad.addColorStop(1, 'rgba(255, 200, 110, 0)');
     ctx.fillStyle = grad;
     ctx.fillRect(x - r, y - r, r * 2, r * 2);
   }
 
-  // 4. 黒点（暗い斑）
-  for (let i = 0; i < 14; i++) {
+  // 4. 黒点（暗い斑）— 数と濃さを上げて存在感を強める
+  for (let i = 0; i < 22; i++) {
     const x = Math.random() * size;
     const y = Math.random() * size;
-    const r = 8 + Math.random() * 22;
+    const r = 10 + Math.random() * 28;
     const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
-    grad.addColorStop(0, 'rgba(60, 20, 5, 0.85)');
-    grad.addColorStop(0.6, 'rgba(120, 50, 15, 0.5)');
+    grad.addColorStop(0, 'rgba(30, 10, 0, 0.95)');
+    grad.addColorStop(0.55, 'rgba(90, 35, 10, 0.55)');
     grad.addColorStop(1, 'rgba(120, 50, 15, 0)');
     ctx.fillStyle = grad;
     ctx.fillRect(x - r, y - r, r * 2, r * 2);
@@ -323,13 +333,13 @@ function createSunTexture() {
 // 太陽
 // ============================================================
 
+// 太陽だけは不透明にして「光の塊」感を出す（地球/月は BODY_OPACITY のまま）
 const sun = new THREE.Mesh(
   new THREE.SphereGeometry(SUN_RADIUS, 64, 64),
   new THREE.MeshBasicMaterial({
     map: createSunTexture(),
-    transparent: true,
-    opacity: BODY_OPACITY,
-    depthWrite: false
+    transparent: false,
+    depthWrite: true
   })
 );
 scene.add(sun);
@@ -1268,7 +1278,7 @@ function onPointerUp(e) {
   const dist = Math.hypot(dx, dy);
   const elapsed = performance.now() - pointerDown.t;
   pointerDown = null;
-  if (dist > CLICK_THRESHOLD_PX || elapsed >= 400) return;
+  if (dist > CLICK_THRESHOLD_PX || elapsed >= CLICK_MAX_DURATION_MS) return;
 
   const now = performance.now();
   if (now - lastClickTime < DOUBLE_CLICK_MS) {
