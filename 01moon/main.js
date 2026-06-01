@@ -476,6 +476,15 @@ function updateObserverMarker() {
 }
 updateObserverMarker();
 
+// スマホ（狭い画面 / 横画面で高さが低い）では地球上の緑マーカーも非表示にする。
+// CSS 側で観測小窓を消しているのと判定を揃える
+const _mobileMQL = window.matchMedia('(max-width: 640px), (max-height: 500px)');
+function applyMobileSceneVisibility() {
+  observerMarker.visible = !_mobileMQL.matches;
+}
+applyMobileSceneVisibility();
+_mobileMQL.addEventListener('change', applyMobileSceneVisibility);
+
 // ============================================================
 // 月（地球に追従、5.145°傾斜した公転面）
 // ============================================================
