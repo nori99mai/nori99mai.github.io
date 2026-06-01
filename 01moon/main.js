@@ -344,24 +344,7 @@ const sun = new THREE.Mesh(
 );
 scene.add(sun);
 
-// コロナ（多層ハロー）
-function addHaloLayer(parent, scale, color, opacity) {
-  const m = new THREE.Mesh(
-    new THREE.SphereGeometry(SUN_RADIUS * scale, 48, 48),
-    new THREE.MeshBasicMaterial({
-      color,
-      transparent: true,
-      opacity,
-      side: THREE.BackSide,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending
-    })
-  );
-  parent.add(m);
-}
-addHaloLayer(sun, 1.10, 0xffc070, 0.35);
-addHaloLayer(sun, 1.25, 0xffa040, 0.18);
-addHaloLayer(sun, 1.50, 0xff7020, 0.08);
+// コロナ多層ハローは「枠囲い」に見えるため削除。Bloom + リムライトで光感は維持
 
 // リムライト（縁が明るく光る効果）：球の縁ほど発光が強くなるシェーダー
 const sunRim = new THREE.Mesh(
