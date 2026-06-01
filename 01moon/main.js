@@ -115,8 +115,8 @@ const renderScene = new RenderPass(scene, camera);
 
 const bloomPass = new UnrealBloomPass(
   new THREE.Vector2(window.innerWidth, window.innerHeight),
-  0.55,   // strength（少し抑えめ）
-  0.5,    // radius
+  1.1,    // strength（太陽が「光ってる感」を出すため強め）
+  0.85,   // radius（広く滲ませる）
   0.0     // threshold（このコンポーザーには太陽しか映らないので閾値は0でOK）
 );
 
@@ -344,7 +344,93 @@ const sun = new THREE.Mesh(
 );
 scene.add(sun);
 
-// コロナ多層ハローは「枠囲い」に見えるため削除。Bloom + リムライトで光感は維持
+// 太陽の自発光感：Sprite（境界レス・常時カメラ向き）で柔らかいハローを重ねる
+// 球メッシュ製の旧コロナは縁が「枠」に見えたため、グラデーション Sprite に変更
+function createSunHaloTexture() {
+  const size = 512;
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = size;
+  const ctx = cv.getContext('2d');
+  const g = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+  // 中心は太陽色、外側は完全透明。途中で色を変えて自然なグラデに
+  g.addColorStop(0.00, 'rgba(255, 240, 180, 0.95)');
+  g.addColorStop(0.12, 'rgba(255, 210, 130, 0.55)');
+  g.addColorStop(0.30, 'rgba(255, 160,  70, 0.22)');
+  g.addColorStop(0.55, 'rgba(255, 120,  40, 0.08)');
+  g.addColorStop(1.00, 'rgba(255, 120,  40, 0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, size, size);
+  return new THREE.CanvasTexture(cv);
+}
+
+function createSunRayTexture() {
+  // 十字スパイク（一眼の回折スパイクを大きくして太陽光線に）
+  const size = 1024;
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = size;
+  const ctx = cv.getContext('2d');
+  ctx.globalCompositeOperation = 'lighter';
+  function drawSpike(angle, thickness, intensity) {
+    ctx.save();
+    ctx.translate(size/2, size/2);
+    ctx.rotate(angle);
+    const grad = ctx.createLinearGradient(-size/2, 0, size/2, 0);
+    grad.addColorStop(0.00, 'rgba(255, 230, 150, 0)');
+    grad.addColorStop(0.35, 'rgba(255, 230, 150, 0)');
+    grad.addColorStop(0.49, `rgba(255, 240, 180, ${intensity * 0.5})`);
+    grad.addColorStop(0.50, `rgba(255, 250, 220, ${intensity})`);
+    grad.addColorStop(0.51, `rgba(255, 240, 180, ${intensity * 0.5})`);
+    grad.addColorStop(0.65, 'rgba(255, 230, 150, 0)');
+    grad.addColorStop(1.00, 'rgba(255, 230, 150, 0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(-size/2, -thickness/2, size, thickness);
+    ctx.restore();
+  }
+  drawSpike(0,             8, 0.85);
+  drawSpike(Math.PI / 2,   8, 0.85);
+  drawSpike(Math.PI / 4,   5, 0.45);
+  drawSpike(-Math.PI / 4,  5, 0.45);
+  return new THREE.CanvasTexture(cv);
+}
+
+const SUN_HALO_TEX = createSunHaloTexture();
+const SUN_RAY_TEX  = createSunRayTexture();
+
+// 内側ハロー：太陽本体に近い、濃いめのオレンジ
+const sunHaloInner = new THREE.Sprite(new THREE.SpriteMaterial({
+  map: SUN_HALO_TEX,
+  color: 0xffd070,
+  transparent: true,
+  opacity: 0.95,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending
+}));
+sunHaloInner.scale.set(SUN_RADIUS * 5.5, SUN_RADIUS * 5.5, 1);
+sun.add(sunHaloInner);
+
+// 外側ハロー：薄く広く広がる
+const sunHaloOuter = new THREE.Sprite(new THREE.SpriteMaterial({
+  map: SUN_HALO_TEX,
+  color: 0xffa040,
+  transparent: true,
+  opacity: 0.55,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending
+}));
+sunHaloOuter.scale.set(SUN_RADIUS * 11, SUN_RADIUS * 11, 1);
+sun.add(sunHaloOuter);
+
+// 太陽光線（十字スパイク）：「光ってる」サインを大きく出す
+const sunRays = new THREE.Sprite(new THREE.SpriteMaterial({
+  map: SUN_RAY_TEX,
+  color: 0xfff0c0,
+  transparent: true,
+  opacity: 0.85,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending
+}));
+sunRays.scale.set(SUN_RADIUS * 16, SUN_RADIUS * 16, 1);
+sun.add(sunRays);
 
 // リムライト（縁が明るく光る効果）：球の縁ほど発光が強くなるシェーダー
 const sunRim = new THREE.Mesh(
