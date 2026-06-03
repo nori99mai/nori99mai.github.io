@@ -196,8 +196,10 @@
     .invite-btn .arrow { font-size: 16px; }
 
     /* ===== コマンドテーブル ===== */
-    .cmd-table {
+    .cmd-table-wrap {
       padding-left: 48px;
+    }
+    .cmd-table {
       width: 100%;
       border-collapse: collapse;
     }
@@ -330,7 +332,7 @@
 
       .sec-body,
       .install-block,
-      .cmd-table,
+      .cmd-table-wrap,
       .cmd-note,
       .pena-block,
       .pena-closing { padding-left: 0; }
@@ -410,32 +412,34 @@
       <span class="sec-num">02</span>
       <span class="sec-title">COMMANDS</span>
     </div>
-    <table class="cmd-table">
-      <thead>
-        <tr>
-          <th>COMMAND</th>
-          <th>DESCRIPTION</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>/splapena run</td>
-          <td>VCにいる全員にペナルティをランダムで割り当てて発表</td>
-        </tr>
-        <tr>
-          <td>/splapena list</td>
-          <td>登録中のペナルティ一覧を表示</td>
-        </tr>
-        <tr>
-          <td>/splapena add</td>
-          <td>ペナルティを追加（サーバー管理者のみ）</td>
-        </tr>
-        <tr>
-          <td>/splapena remove</td>
-          <td>ペナルティを削除（サーバー管理者のみ）</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="cmd-table-wrap">
+      <table class="cmd-table">
+        <thead>
+          <tr>
+            <th>COMMAND</th>
+            <th>DESCRIPTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>/splapena run</td>
+            <td>VCにいる全員にペナルティをランダムで割り当てて発表</td>
+          </tr>
+          <tr>
+            <td>/splapena list</td>
+            <td>登録中のペナルティ一覧を表示</td>
+          </tr>
+          <tr>
+            <td>/splapena add</td>
+            <td>ペナルティを追加（サーバー管理者のみ）</td>
+          </tr>
+          <tr>
+            <td>/splapena remove</td>
+            <td>ペナルティを削除（サーバー管理者のみ）</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     <p class="cmd-note">
       BOT導入後、VCのチャットで <code style="font-family:'Courier New',monospace;font-size:13px;font-weight:700;">/splapena</code> と入力すると候補が表示されます。選ぶだけでOK、スマホでも簡単です。<br>
       ペナルティはもともと19個入っており、好きなものを追加・削除できます（サーバーごとに管理）。
