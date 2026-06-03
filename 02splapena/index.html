@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RANDOM PENALTY BOT — nori99mai</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:      #1a1a1a;
+      --ink-soft: #4a4a4a;
+      --paper:    #ffffff;
+      --line:     rgba(26, 26, 26, 0.15);
+      --accent:   #1a1a1a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    /* ===== ヘッダーバー ===== */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 48px;
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+    }
+    .topbar-back {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--ink-soft);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .topbar-back:hover { color: var(--ink); }
+    .topbar-id {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 10px;
+      color: var(--ink-soft);
+      letter-spacing: 1px;
+    }
+
+    /* ===== メインコンテンツ ===== */
+    .page {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 120px 48px 100px;
+    }
+
+    /* ===== ヒーロー ===== */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+      padding-bottom: 64px;
+      border-bottom: 1px solid var(--line);
+    }
+    .hero-text {}
+    .hero-eyebrow {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--ink-soft);
+      margin-bottom: 20px;
+    }
+    .hero-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(28px, 4vw, 48px);
+      line-height: 1.1;
+      letter-spacing: -1px;
+      margin-bottom: 24px;
+    }
+    .hero-title span {
+      display: block;
+      font-size: clamp(18px, 2.5vw, 28px);
+      font-weight: 400;
+      letter-spacing: 4px;
+      margin-top: 8px;
+    }
+    .hero-byline {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 400;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--ink-soft);
+      margin-bottom: 20px;
+    }
+    .hero-desc {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 400;
+      font-size: 13px;
+      line-height: 2;
+      color: var(--ink-soft);
+      letter-spacing: 0.5px;
+    }
+
+    .hero-img {
+      overflow: hidden;
+      border: 1px solid var(--line);
+    }
+    .hero-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: right center;
+      display: block;
+    }
+
+    /* ===== セクション共通 ===== */
+    .section {
+      padding: 56px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .section:last-of-type { border-bottom: none; }
+
+    .sec-head {
+      display: flex;
+      align-items: baseline;
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    .sec-num {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 11px;
+      color: var(--ink-soft);
+      letter-spacing: 1px;
+      min-width: 28px;
+    }
+    .sec-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 4px;
+    }
+
+    .sec-body {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 400;
+      font-size: 13px;
+      line-height: 2.2;
+      color: var(--ink-soft);
+      padding-left: 48px;
+    }
+
+    /* ===== 導入ブロック ===== */
+    .install-block {
+      padding-left: 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    .install-group {}
+    .install-label {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+    .install-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      line-height: 2.2;
+      color: var(--ink-soft);
+    }
+
+    /* 招待ボタン */
+    .invite-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 28px;
+      padding: 16px 32px;
+      background: var(--ink);
+      color: var(--paper);
+      text-decoration: none;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 3px;
+      transition: opacity 0.2s;
+    }
+    .invite-btn:hover { opacity: 0.7; }
+    .invite-btn .arrow { font-size: 16px; }
+
+    /* ===== コマンドテーブル ===== */
+    .cmd-table {
+      padding-left: 48px;
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .cmd-table th,
+    .cmd-table td {
+      text-align: left;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      line-height: 1.8;
+    }
+    .cmd-table th {
+      font-weight: 700;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--ink-soft);
+      padding-bottom: 10px;
+    }
+    .cmd-table td:first-child {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      white-space: nowrap;
+      padding-right: 28px;
+    }
+    .cmd-table td:last-child { color: var(--ink-soft); }
+    .cmd-note {
+      padding-left: 48px;
+      margin-top: 20px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      color: var(--ink-soft);
+      line-height: 2;
+    }
+
+    /* ===== ペナルティ一覧 ===== */
+    .pena-block {
+      padding-left: 48px;
+      margin-bottom: 32px;
+    }
+    .pena-block:last-of-type { margin-bottom: 0; }
+    .pena-category {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
+      letter-spacing: 3px;
+      color: var(--ink-soft);
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--ink);
+      margin-bottom: 0;
+    }
+    .pena-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0;
+      margin-bottom: 0;
+    }
+    .pena-item {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      padding: 13px 16px 13px 0;
+      border-bottom: 1px solid var(--line);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      color: var(--ink-soft);
+      line-height: 1.6;
+    }
+    .pena-num {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
+      color: rgba(26,26,26,0.3);
+      min-width: 24px;
+    }
+    .pena-closing {
+      padding-left: 48px;
+      margin-top: 36px;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 1px;
+      color: var(--ink);
+    }
+
+    /* ===== フッター ===== */
+    .footer {
+      padding: 40px 48px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-name {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--ink-soft);
+    }
+    .footer-back {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--ink-soft);
+      text-decoration: none;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 2px;
+      transition: color 0.2s;
+    }
+    .footer-back:hover { color: var(--ink); }
+
+    /* ===== スマホ対応 ===== */
+    @media (max-width: 640px) {
+      .topbar { padding: 16px 24px; }
+      .page { padding: 90px 24px 60px; }
+
+      .hero {
+        grid-template-columns: 1fr;
+        gap: 32px;
+        padding-bottom: 48px;
+      }
+      .hero-img { order: -1; aspect-ratio: 16/9; }
+
+      .sec-body,
+      .install-block,
+      .cmd-table,
+      .cmd-note,
+      .pena-block,
+      .pena-closing { padding-left: 0; }
+
+      .cmd-table th,
+      .cmd-table td { font-size: 11px; }
+      .cmd-table td:first-child { font-size: 8px; padding-right: 16px; }
+
+      .pena-grid { grid-template-columns: 1fr; }
+
+      .footer { flex-direction: column; gap: 16px; align-items: flex-start; padding: 32px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== トップバー ===== -->
+<header class="topbar">
+  <a class="topbar-back" href="../">&larr; INDEX</a>
+  <span class="topbar-id">02</span>
+</header>
+
+<!-- ===== メインコンテンツ ===== -->
+<main class="page">
+
+  <!-- ヒーロー -->
+  <div class="hero">
+    <div class="hero-text">
+      <div class="hero-eyebrow">DISCORD BOT</div>
+      <h1 class="hero-title">
+        RANDOM<br>PENALTY
+        <span>BOT</span>
+      </h1>
+      <div class="hero-byline">by nori99mai</div>
+      <p class="hero-desc">
+        Splatoon3 プライベートマッチを<br>
+        盛り上げるDiscord BOTです。<br>
+        VCにいる全員へペナルティを<br>ランダム割り当て。<br>
+        ちょっとした遊びのルール決めにどうぞ！
+      </p>
+    </div>
+    <div class="hero-img">
+      <img src="demo.png" alt="Random Penalty Bot 動作画面">
+    </div>
+  </div>
+
+  <!-- 01 導入方法 -->
+  <section class="section">
+    <div class="sec-head">
+      <span class="sec-num">01</span>
+      <span class="sec-title">HOW TO INVITE</span>
+    </div>
+    <div class="install-block">
+      <div class="install-group">
+        <div class="install-label">FOR ADMIN</div>
+        <p class="install-text">
+          サーバー管理者の方は下のボタンからDiscordサーバーに招待できます。<br>
+          インストール不要・無料です。
+        </p>
+        <a class="invite-btn" href="https://discord.com/oauth2/authorize?client_id=1511537933767938179&scope=bot+applications.commands&permissions=2048" target="_blank" rel="noopener">
+          INVITE TO DISCORD <span class="arrow">&rarr;</span>
+        </a>
+      </div>
+      <div class="install-group">
+        <div class="install-label">FOR MEMBERS</div>
+        <p class="install-text">
+          このBotはサーバー管理者のみが導入できます。<br>
+          使いたい場合は、このページのURLをサーバーの管理人さんへお伝えください。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 使い方 -->
+  <section class="section">
+    <div class="sec-head">
+      <span class="sec-num">02</span>
+      <span class="sec-title">COMMANDS</span>
+    </div>
+    <table class="cmd-table">
+      <thead>
+        <tr>
+          <th>COMMAND</th>
+          <th>DESCRIPTION</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>/splapena run</td>
+          <td>VCにいる全員にペナルティをランダムで割り当てて発表</td>
+        </tr>
+        <tr>
+          <td>/splapena list</td>
+          <td>登録中のペナルティ一覧を表示</td>
+        </tr>
+        <tr>
+          <td>/splapena add</td>
+          <td>ペナルティを追加（サーバー管理者のみ）</td>
+        </tr>
+        <tr>
+          <td>/splapena remove</td>
+          <td>ペナルティを削除（サーバー管理者のみ）</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="cmd-note">
+      BOT導入後、VCのチャットで <code style="font-family:'Courier New',monospace;font-size:13px;font-weight:700;">/splapena</code> と入力すると候補が表示されます。選ぶだけでOK、スマホでも簡単です。<br>
+      ペナルティはもともと19個入っており、好きなものを追加・削除できます（サーバーごとに管理）。
+    </p>
+  </section>
+
+  <!-- 03 デフォルトペナルティ一覧 -->
+  <section class="section">
+    <div class="sec-head">
+      <span class="sec-num">03</span>
+      <span class="sec-title">DEFAULT PENALTIES</span>
+    </div>
+    <!-- WEAPON -->
+    <div class="pena-block">
+      <div class="pena-category">WEAPON — ブキ縛り</div>
+      <div class="pena-grid">
+        <div class="pena-item"><span class="pena-num">01</span>ショクワンダー使用</div>
+        <div class="pena-item"><span class="pena-num">02</span>竹ブキ使用</div>
+        <div class="pena-item"><span class="pena-num">03</span>フデ・ローラー種で引きのみでプレイ</div>
+      </div>
+    </div>
+
+    <!-- OPERATION -->
+    <div class="pena-block">
+      <div class="pena-category">OPERATION — 操作縛り</div>
+      <div class="pena-grid">
+        <div class="pena-item"><span class="pena-num">04</span>イカ状態禁止</div>
+        <div class="pena-item"><span class="pena-num">05</span>メイン禁止</div>
+        <div class="pena-item"><span class="pena-num">06</span>ジャンプ禁止</div>
+        <div class="pena-item"><span class="pena-num">07</span>マニュ系ブキでスライド禁止</div>
+        <div class="pena-item"><span class="pena-num">08</span>ヒト状態禁止（攻撃時除く）</div>
+        <div class="pena-item"><span class="pena-num">09</span>サブ禁止</div>
+        <div class="pena-item"><span class="pena-num">10</span>スーパージャンプ禁止</div>
+        <div class="pena-item"><span class="pena-num">11</span>ルール関与禁止</div>
+      </div>
+    </div>
+
+    <!-- HANDICAP -->
+    <div class="pena-block">
+      <div class="pena-category">HANDICAP — ハンデ</div>
+      <div class="pena-grid">
+        <div class="pena-item"><span class="pena-num">12</span>セルフペナアップ（リス後3秒待機）</div>
+        <div class="pena-item"><span class="pena-num">13</span>立ってプレイ</div>
+      </div>
+    </div>
+
+    <!-- ACTION -->
+    <div class="pena-block">
+      <div class="pena-category">ACTION — 行動ノルマ</div>
+      <div class="pena-grid">
+        <div class="pena-item"><span class="pena-num">14</span>キルを取ったら3秒間その場で煽り行為</div>
+        <div class="pena-item"><span class="pena-num">15</span>デスしたら腹筋３回</div>
+      </div>
+    </div>
+
+    <!-- TALK -->
+    <div class="pena-block">
+      <div class="pena-category">TALK — しゃべり縛り</div>
+      <div class="pena-grid">
+        <div class="pena-item"><span class="pena-num">16</span>デスするたびにお嬢様言葉を話す</div>
+        <div class="pena-item"><span class="pena-num">17</span>デスしたら語尾にゃん</div>
+        <div class="pena-item"><span class="pena-num">18</span>デスしたらお礼を言う</div>
+      </div>
+    </div>
+
+    <!-- SPECIAL -->
+    <div class="pena-block">
+      <div class="pena-category">JOKER — 特殊</div>
+      <div class="pena-grid">
+        <div class="pena-item"><span class="pena-num">19</span>好きなペナルティを誰か一人に押しつけ</div>
+      </div>
+    </div>
+
+    <p class="pena-closing">いろんなペナルティを追加／削除してお楽しみください！</p>
+  </section>
+
+</main>
+
+<!-- ===== フッター ===== -->
+<footer class="footer">
+  <span class="footer-name">NORI 99MAI</span>
+  <a class="footer-back" href="../">&larr; BACK TO INDEX</a>
+</footer>
+
+</body>
+</html>
