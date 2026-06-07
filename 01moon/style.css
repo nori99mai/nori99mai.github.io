@@ -144,44 +144,35 @@ html, body {
 }
 
 /* ============================================================
-   モードボタン共通（着地・宇宙へ）
+   地上UIボタン共通（着地・宇宙へ・月・国旗）
    ============================================================ */
 #land-btn,
-#jump-btn {
+#jump-btn,
+#moon-aim-btn {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 10px 14px 8px;
+  width: 66px;
+  height: 44px;
+  padding: 0;
   border: 1px solid rgba(160, 210, 255, 0.40);
-  border-radius: 14px;
+  border-radius: 10px;
   background: rgba(6, 10, 26, 0.52);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   color: rgba(190, 220, 255, 0.90);
   cursor: pointer;
-  white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
   transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
 }
 
 #land-btn svg,
-#jump-btn svg {
+#jump-btn svg,
+#moon-aim-btn svg {
   display: block;
-  width: 32px;
+  width: 28px;
   height: 28px;
   flex-shrink: 0;
-}
-
-#land-btn span,
-#jump-btn span {
-  font-family: "Cormorant Garamond", "Hiragino Mincho ProN", serif;
-  font-size: 11px;
-  font-style: italic;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  color: rgba(190, 220, 255, 0.75);
 }
 
 /* 着地ボタン（画面下中央） */
@@ -195,21 +186,23 @@ html, body {
 
 #land-btn:hover {
   border-color: rgba(160, 210, 255, 0.85);
-  box-shadow: 0 0 18px rgba(100, 170, 255, 0.35);
+  box-shadow: 0 0 16px rgba(100, 170, 255, 0.35);
   transform: translateX(-50%) translateY(-2px);
 }
 
 #land-btn:active  { transform: translateX(-50%) translateY(0); }
 #land-btn.hidden  { display: none; }
 
-/* 宇宙へボタン（ground-ui 内） */
-#jump-btn:hover {
+/* 宇宙へ・月ボタン（ground-ui 内） */
+#jump-btn:hover,
+#moon-aim-btn:hover {
   border-color: rgba(160, 210, 255, 0.85);
-  box-shadow: 0 0 18px rgba(100, 170, 255, 0.35);
+  box-shadow: 0 0 16px rgba(100, 170, 255, 0.35);
   transform: translateY(-2px);
 }
 
-#jump-btn:active { transform: translateY(0); }
+#jump-btn:active,
+#moon-aim-btn:active { transform: translateY(0); }
 
 /* ============================================================
    地上視点 UI パネル（右側・地上視点時のみ表示）
@@ -239,23 +232,24 @@ html, body {
   appearance: none;
   -webkit-appearance: none;
   display: block;
-  width: 54px;
-  height: 36px;
+  width: 66px;
+  height: 44px;
   padding: 0;
-  border: 1.5px solid rgba(180, 255, 200, 0.55);
-  border-radius: 6px;
+  border: 1px solid rgba(160, 210, 255, 0.40);
+  border-radius: 10px;
   overflow: hidden;
-  background: none;
+  background: rgba(6, 10, 26, 0.52);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(120, 255, 170, 0.22);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 #ground-flag-current:hover {
-  border-color: rgba(180, 255, 200, 0.9);
-  box-shadow: 0 0 16px rgba(120, 255, 170, 0.45);
-  transform: translateX(-1px);
+  border-color: rgba(160, 210, 255, 0.85);
+  box-shadow: 0 0 16px rgba(100, 170, 255, 0.35);
+  transform: translateY(-2px);
 }
 
 #ground-flag-current img {
@@ -318,10 +312,32 @@ html, body {
 }
 
 .ground-flag-btn:hover {
-  border-color: rgba(180, 255, 200, 0.75);
-  box-shadow: 0 0 10px rgba(120, 255, 170, 0.3);
-  transform: translateX(-2px);
+  border-color: rgba(160, 210, 255, 0.75);
+  box-shadow: 0 0 10px rgba(100, 170, 255, 0.28);
+  transform: translateY(-1px);
 }
+
+/* ============================================================
+   地上視点：右上日付表示
+   ============================================================ */
+#ground-date {
+  position: fixed;
+  top: 36px;
+  right: 36px;
+  color: rgba(220, 235, 255, 0.82);
+  font-family: "Cormorant Garamond", "Hiragino Mincho ProN", serif;
+  font-size: 28px;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.7);
+  z-index: 100;
+}
+
+#ground-date.hidden { display: none; }
 
 /* ============================================================
    レスポンシブ
@@ -329,9 +345,9 @@ html, body {
 @media (max-width: 640px), (max-height: 500px) {
   #month-number { font-size: 64px; }
   #month-name   { font-size: 14px; }
-  #land-btn svg, #jump-btn svg { width: 26px; height: 22px; }
-  #land-btn span, #jump-btn span { font-size: 10px; }
-  #ground-flag-current, .ground-flag-btn { width: 44px; height: 30px; }
+  #land-btn svg, #jump-btn svg, #moon-aim-btn svg { width: 22px; height: 22px; }
+  #land-btn, #jump-btn, #moon-aim-btn, #ground-flag-current { width: 54px; height: 36px; }
+  .ground-flag-btn { width: 44px; height: 30px; }
   #today-btn { width: 38px; height: 38px; font-size: 8px; }
 }
 

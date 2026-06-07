@@ -749,7 +749,8 @@ const _tmpVec = new THREE.Vector3();
 // 地上視点モード
 // ============================================================
 
-let viewMode = 'space'; // 'space' | 'ground' | 'transitioning'
+let viewMode    = 'space'; // 'space' | 'ground' | 'transitioning'
+let landingBody = null;   // 'earth' | 'moon' | null
 
 let groundAzimuth   = 0;
 let groundElevation = THREE.MathUtils.degToRad(20); // 初期：少し上を向く
@@ -777,8 +778,20 @@ function latLonToVec3(latDeg, lonDeg, radius) {
   );
 }
 
-// 現在の観測国の地表世界座標・天頂方向を取得
+// 観測体の地表世界座標・天頂方向を取得（地球 or 月）
 function getObserverWorldState() {
+  if (landingBody === 'moon') {
+    moon.updateMatrixWorld();
+    earth.updateMatrixWorld();
+    const moonCenter = new THREE.Vector3();
+    moon.getWorldPosition(moonCenter);
+    const earthCenter = new THREE.Vector3();
+    earth.getWorldPosition(earthCenter);
+    // 地球が見える側（月の近地点）に着陸
+    const upDir = earthCenter.clone().sub(moonCenter).normalize();
+    const worldPos = moonCenter.clone().addScaledVector(upDir, MOON_RADIUS * 1.05);
+    return { worldPos, upDir };
+  }
   earth.updateMatrixWorld();
   const c = COUNTRIES[selectedCountryIdx];
   const localPos = latLonToVec3(c.latDeg, c.lonDeg, EARTH_RADIUS * 1.05);
@@ -809,26 +822,72 @@ function computeGroundLookTarget(obsPos, upDir) {
   return obsPos.clone().addScaledVector(lookDir, 10);
 }
 
+// 月の方向に groundAzimuth/groundElevation をセット
+function aimAtMoon(worldPos, upDir) {
+  const moonWorldPos = new THREE.Vector3();
+  moon.getWorldPosition(moonWorldPos);
+  const dir = moonWorldPos.clone().sub(worldPos).normalize();
+
+  const sinElev = THREE.MathUtils.clamp(dir.dot(upDir), -1, 1);
+  const elev    = Math.asin(sinElev);
+
+  const worldY = new THREE.Vector3(0, 1, 0);
+  let northDir = worldY.clone().addScaledVector(upDir, -worldY.dot(upDir));
+  if (northDir.lengthSq() < 1e-6) northDir.set(1, 0, 0).addScaledVector(upDir, -upDir.x);
+  northDir.normalize();
+  const eastDir = new THREE.Vector3().crossVectors(northDir, upDir).normalize();
+
+  groundAzimuth   = Math.atan2(dir.dot(eastDir), dir.dot(northDir));
+  groundElevation = THREE.MathUtils.clamp(elev, ELEVATION_MIN, ELEVATION_MAX);
+}
+
+// 月着陸時：地球の方向に groundAzimuth/groundElevation をセット
+function aimAtEarth(worldPos, upDir) {
+  const earthWorldPos = new THREE.Vector3();
+  earth.getWorldPosition(earthWorldPos);
+  const dir = earthWorldPos.clone().sub(worldPos).normalize();
+  const sinElev = THREE.MathUtils.clamp(dir.dot(upDir), -1, 1);
+  const elev    = Math.asin(sinElev);
+  const worldY = new THREE.Vector3(0, 1, 0);
+  let northDir = worldY.clone().addScaledVector(upDir, -worldY.dot(upDir));
+  if (northDir.lengthSq() < 1e-6) northDir.set(1, 0, 0).addScaledVector(upDir, -upDir.x);
+  northDir.normalize();
+  const eastDir = new THREE.Vector3().crossVectors(northDir, upDir).normalize();
+  groundAzimuth   = Math.atan2(dir.dot(eastDir), dir.dot(northDir));
+  groundElevation = THREE.MathUtils.clamp(elev, ELEVATION_MIN, ELEVATION_MAX);
+}
+
+// シミュレーション日付を "M/D" 形式で返す
+function simDateStr() {
+  const yearFrac   = ((earthAngle / (Math.PI * 2)) % 1 + 1) % 1;
+  const monthFloat = yearFrac * 12;
+  const monthIdx   = Math.floor(monthFloat);
+  const daysInMonth = new Date(2024, monthIdx + 1, 0).getDate();
+  const day = Math.floor((monthFloat - monthIdx) * daysInMonth) + 1;
+  return `${monthIdx + 1}/${day}`;
+}
+
 function easeInOut(t) {
   return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 }
 
-// 着地ボタンの表示制御
+// 着地ボタンの表示制御（地球・月どちらもフォーカス時に表示）
 function updateLandBtnVisibility() {
   const landBtn = document.getElementById('land-btn');
   if (!landBtn) return;
-  const show = focusTarget === earth && viewMode === 'space';
+  const show = viewMode === 'space' &&
+    (focusTarget === earth || focusTarget === moon);
   landBtn.classList.toggle('hidden', !show);
 }
 
-// 地上視点へ移行開始
-function enterGroundView() {
+// 地上視点へ移行開始（body: 'earth' | 'moon'）
+function enterGroundView(body = 'earth') {
   if (viewMode !== 'space') return;
+  landingBody = body;
   viewMode = 'transitioning';
   speedScale = GROUND_SPEED_SCALE;
   controls.enabled = false;
 
-  // 宇宙カメラ位置を保存（復帰時に使う）
   savedSpaceCamPos    = camera.position.clone();
   savedSpaceCamTarget = controls.target.clone();
 
@@ -840,7 +899,25 @@ function enterGroundView() {
     isEntering: true,
     onComplete: () => {
       viewMode = 'ground';
+      const { worldPos, upDir } = getObserverWorldState();
+      if (landingBody === 'moon') {
+        aimAtEarth(worldPos, upDir);
+        earth.material.opacity = 0.98; // 月から見た地球
+      } else {
+        aimAtMoon(worldPos, upDir);
+        earth.material.opacity = 0.70;
+      }
+      earth.material.needsUpdate = true;
       document.getElementById('ground-ui').classList.remove('hidden');
+      // 月面着陸時は国旗UIを非表示
+      const groundFlags = document.getElementById('ground-flags');
+      if (groundFlags) groundFlags.classList.toggle('hidden', landingBody === 'moon');
+      const groundDateEl = document.getElementById('ground-date');
+      if (groundDateEl) {
+        groundDateEl.textContent = simDateStr();
+        groundDateEl.classList.remove('hidden');
+      }
+      monthChip.classList.add('hidden');
     }
   };
 
@@ -879,9 +956,25 @@ function exitGroundView() {
       viewMode = 'space';
       speedScale = 1.0;
       controls.enabled = true;
-      // 地球の現在位置をターゲットに（公転でずれていても正確に追う）
       earth.getWorldPosition(_tmpVec);
       controls.target.copy(_tmpVec);
+      // 地球の opacity を宇宙視点用に戻す
+      earth.material.opacity = 0.68;
+      earth.material.needsUpdate = true;
+      // 国旗UIを戻す・状態リセット
+      const groundFlags2 = document.getElementById('ground-flags');
+      if (groundFlags2) groundFlags2.classList.remove('hidden');
+      landingBody = null;
+      // 日付表示を隠す
+      const groundDateEl = document.getElementById('ground-date');
+      if (groundDateEl) groundDateEl.classList.add('hidden');
+      // 月チップを復元
+      if (!isPlaying) {
+        const m = currentMonth();
+        monthNumberEl.textContent = String(m);
+        if (monthNameEl) monthNameEl.textContent = MONTH_NAMES[m - 1];
+        monthChip.classList.remove('hidden');
+      }
       updateLandBtnVisibility();
     }
   };
@@ -987,11 +1080,27 @@ setupGroundFlags();
 // ボタンイベント
 const landBtnEl = document.getElementById('land-btn');
 if (landBtnEl) {
-  landBtnEl.addEventListener('click', (e) => { e.stopPropagation(); enterGroundView(); });
+  landBtnEl.addEventListener('click', (e) => {
+    e.stopPropagation();
+    enterGroundView(focusTarget === moon ? 'moon' : 'earth');
+  });
 }
 const jumpBtnEl = document.getElementById('jump-btn');
 if (jumpBtnEl) {
   jumpBtnEl.addEventListener('click', (e) => { e.stopPropagation(); exitGroundView(); });
+}
+const moonAimBtnEl = document.getElementById('moon-aim-btn');
+if (moonAimBtnEl) {
+  moonAimBtnEl.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (viewMode !== 'ground') return;
+    const { worldPos, upDir } = getObserverWorldState();
+    if (landingBody === 'moon') {
+      aimAtEarth(worldPos, upDir);
+    } else {
+      aimAtMoon(worldPos, upDir);
+    }
+  });
 }
 // ground-ui 全体からキャンバスへのイベント伝播防止
 const groundUiEl = document.getElementById('ground-ui');
@@ -1071,6 +1180,11 @@ function animate() {
     updateCameraTransition(dt);
   } else if (viewMode === 'ground') {
     updateGroundCamera();
+    // 日付表示を更新（速度0.05xでゆっくり変化するが毎フレーム同期）
+    const groundDateEl = document.getElementById('ground-date');
+    if (groundDateEl && !groundDateEl.classList.contains('hidden')) {
+      groundDateEl.textContent = simDateStr();
+    }
   } else {
     updateFocus();
     controls.update();
@@ -1185,7 +1299,7 @@ function togglePlay() {
   if (isPlaying) {
     monthChip.classList.add('hidden');
     clearTodayHighlight();
-  } else {
+  } else if (viewMode !== 'ground') {
     const m = currentMonth();
     monthNumberEl.textContent = String(m);
     if (monthNameEl) monthNameEl.textContent = MONTH_NAMES[m - 1];
