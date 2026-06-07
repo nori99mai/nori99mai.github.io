@@ -144,46 +144,72 @@ html, body {
 }
 
 /* ============================================================
-   着地ピクトグラム（地球フォーカス時・画面下中央）
+   モードボタン共通（着地・宇宙へ）
    ============================================================ */
-#land-btn {
-  position: fixed;
-  bottom: 36px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 58px;
-  height: 74px;
-  padding: 9px 8px 7px;
-  border: 1.5px solid rgba(160, 210, 255, 0.45);
-  border-radius: 20px;
-  background: rgba(6, 10, 26, 0.48);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: rgba(190, 220, 255, 0.88);
+#land-btn,
+#jump-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 14px 8px;
+  border: 1px solid rgba(160, 210, 255, 0.40);
+  border-radius: 14px;
+  background: rgba(6, 10, 26, 0.52);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: rgba(190, 220, 255, 0.90);
   cursor: pointer;
-  z-index: 100;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease,
-              opacity 0.3s ease, transform 0.25s ease;
+  white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
 }
 
-#land-btn svg {
+#land-btn svg,
+#jump-btn svg {
   display: block;
-  width: 100%;
-  height: 100%;
+  width: 32px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+#land-btn span,
+#jump-btn span {
+  font-family: "Cormorant Garamond", "Hiragino Mincho ProN", serif;
+  font-size: 11px;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: rgba(190, 220, 255, 0.75);
+}
+
+/* 着地ボタン（画面下中央） */
+#land-btn {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
 }
 
 #land-btn:hover {
-  border-color: rgba(160, 210, 255, 0.9);
-  box-shadow: 0 0 20px rgba(100, 170, 255, 0.4);
-  transform: translateX(-50%) translateY(-3px);
+  border-color: rgba(160, 210, 255, 0.85);
+  box-shadow: 0 0 18px rgba(100, 170, 255, 0.35);
+  transform: translateX(-50%) translateY(-2px);
 }
 
-#land-btn:active {
-  transform: translateX(-50%) translateY(0);
+#land-btn:active  { transform: translateX(-50%) translateY(0); }
+#land-btn.hidden  { display: none; }
+
+/* 宇宙へボタン（ground-ui 内） */
+#jump-btn:hover {
+  border-color: rgba(160, 210, 255, 0.85);
+  box-shadow: 0 0 18px rgba(100, 170, 255, 0.35);
+  transform: translateY(-2px);
 }
 
-#land-btn.hidden { display: none; }
+#jump-btn:active { transform: translateY(0); }
 
 /* ============================================================
    地上視点 UI パネル（右側・地上視点時のみ表示）
@@ -195,49 +221,76 @@ html, body {
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 14px;
+  align-items: flex-end;
+  gap: 12px;
   z-index: 100;
   -webkit-tap-highlight-color: transparent;
 }
 
 #ground-ui.hidden { display: none; }
 
-/* ジャンプピクトグラム（宇宙に戻る） */
-#jump-btn {
-  width: 58px;
-  height: 74px;
-  padding: 7px 8px 9px;
-  border: 1.5px solid rgba(160, 210, 255, 0.45);
-  border-radius: 20px;
-  background: rgba(6, 10, 26, 0.48);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: rgba(190, 220, 255, 0.88);
+/* 国旗エリア（1枚表示＋展開メニュー） */
+#ground-flags {
+  position: relative;
+}
+
+/* 現在選択国（常時表示） */
+#ground-flag-current {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 54px;
+  height: 36px;
+  padding: 0;
+  border: 1.5px solid rgba(180, 255, 200, 0.55);
+  border-radius: 6px;
+  overflow: hidden;
+  background: none;
   cursor: pointer;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  box-shadow: 0 0 10px rgba(120, 255, 170, 0.22);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
-#jump-btn svg {
-  display: block;
+#ground-flag-current:hover {
+  border-color: rgba(180, 255, 200, 0.9);
+  box-shadow: 0 0 16px rgba(120, 255, 170, 0.45);
+  transform: translateX(-1px);
+}
+
+#ground-flag-current img {
   width: 100%;
   height: 100%;
+  display: block;
+  object-fit: cover;
+  pointer-events: none;
 }
 
-#jump-btn:hover {
-  border-color: rgba(160, 210, 255, 0.9);
-  box-shadow: 0 0 20px rgba(100, 170, 255, 0.4);
-  transform: translateY(-3px);
-}
-
-#jump-btn:active { transform: translateY(0); }
-
-/* 国旗リスト（縦並び） */
-#ground-flags {
+/* 展開メニュー（上方向に展開） */
+#ground-flag-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  padding: 7px;
+  background: rgba(8, 10, 22, 0.82);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+#ground-flag-menu.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px);
 }
 
 .ground-flag-btn {
@@ -270,24 +323,15 @@ html, body {
   transform: translateX(-2px);
 }
 
-.ground-flag-btn.selected {
-  border-color: rgba(180, 255, 200, 0.95);
-  box-shadow: 0 0 14px rgba(120, 255, 170, 0.5);
-}
-
 /* ============================================================
    レスポンシブ
    ============================================================ */
 @media (max-width: 640px), (max-height: 500px) {
   #month-number { font-size: 64px; }
   #month-name   { font-size: 14px; }
-  #land-btn, #jump-btn {
-    width: 48px;
-    height: 60px;
-    padding: 7px 6px 5px;
-    border-radius: 16px;
-  }
-  .ground-flag-btn { width: 44px; height: 30px; }
+  #land-btn svg, #jump-btn svg { width: 26px; height: 22px; }
+  #land-btn span, #jump-btn span { font-size: 10px; }
+  #ground-flag-current, .ground-flag-btn { width: 44px; height: 30px; }
   #today-btn { width: 38px; height: 38px; font-size: 8px; }
 }
 

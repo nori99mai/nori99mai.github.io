@@ -39,7 +39,7 @@ const CLICK_MAX_DURATION_MS = 600;
 // 地上視点
 const GROUND_SPEED_SCALE = 0.05;
 const GROUND_DRAG_SENS   = 0.004;
-const ELEVATION_MIN = THREE.MathUtils.degToRad(-10);
+const ELEVATION_MIN = THREE.MathUtils.degToRad(-85);
 const ELEVATION_MAX = THREE.MathUtils.degToRad(88);
 
 // 観測国（日本のみ名古屋）
@@ -922,35 +922,65 @@ function updateGroundCamera() {
   camera.lookAt(computeGroundLookTarget(worldPos, upDir));
 }
 
-// 地上視点の国旗UI セットアップ
+// 地上視点の国旗UI セットアップ（1枚表示→クリックで展開）
 function setupGroundFlags() {
-  const container = document.getElementById('ground-flags');
-  if (!container) return;
-  container.innerHTML = '';
-  COUNTRIES.forEach((c, idx) => {
-    const btn = document.createElement('button');
-    btn.className = 'ground-flag-btn';
-    btn.setAttribute('aria-label', c.name);
-    btn.dataset.idx = String(idx);
-    if (idx === selectedCountryIdx) btn.classList.add('selected');
+  const currentBtn = document.getElementById('ground-flag-current');
+  const menu       = document.getElementById('ground-flag-menu');
+  if (!currentBtn || !menu) return;
 
-    const img = document.createElement('img');
-    img.src = `https://flagcdn.com/${c.code}.svg`;
-    img.alt = c.name;
-    img.loading = 'eager';
-    img.decoding = 'async';
-    btn.appendChild(img);
+  const currentImg = currentBtn.querySelector('img');
 
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      selectedCountryIdx = idx;
-      container.querySelectorAll('.ground-flag-btn').forEach((b, i) => {
-        b.classList.toggle('selected', i === idx);
+  function refreshCurrent() {
+    const c = COUNTRIES[selectedCountryIdx];
+    currentImg.src = `https://flagcdn.com/${c.code}.svg`;
+    currentImg.alt = c.name;
+    currentBtn.setAttribute('aria-label', `観測国: ${c.name}（クリックで切替）`);
+  }
+
+  function buildMenu() {
+    menu.innerHTML = '';
+    COUNTRIES.forEach((c, idx) => {
+      if (idx === selectedCountryIdx) return;
+      const btn = document.createElement('button');
+      btn.className = 'ground-flag-btn';
+      btn.setAttribute('aria-label', c.name);
+      const img = document.createElement('img');
+      img.src = `https://flagcdn.com/${c.code}.svg`;
+      img.alt = c.name;
+      img.loading = 'eager';
+      img.decoding = 'async';
+      btn.appendChild(img);
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectedCountryIdx = idx;
+        groundAzimuth = 0;
+        refreshCurrent();
+        buildMenu();
+        closeMenu();
       });
-      groundAzimuth = 0;
+      menu.appendChild(btn);
     });
-    container.appendChild(btn);
+  }
+
+  function openMenu()  { menu.classList.remove('hidden'); }
+  function closeMenu() { menu.classList.add('hidden'); }
+
+  currentBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    menu.classList.contains('hidden') ? openMenu() : closeMenu();
   });
+
+  // ground-ui 外クリックでメニューを閉じる
+  document.addEventListener('click', () => {
+    if (!menu.classList.contains('hidden')) closeMenu();
+  });
+  document.addEventListener('touchstart', () => {
+    if (!menu.classList.contains('hidden')) closeMenu();
+  }, { passive: true });
+
+  refreshCurrent();
+  buildMenu();
+  closeMenu();
 }
 setupGroundFlags();
 
