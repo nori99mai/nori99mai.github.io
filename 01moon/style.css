@@ -16,6 +16,9 @@ html, body {
   height: 100vh;
 }
 
+/* ============================================================
+   月数チップ（右上）
+   ============================================================ */
 #month-chip {
   position: fixed;
   top: 36px;
@@ -56,10 +59,11 @@ html, body {
 #month-name::before { content: "– "; opacity: 0.75; }
 #month-name::after  { content: " –"; opacity: 0.75; }
 
-#month-chip.hidden {
-  opacity: 0;
-}
+#month-chip.hidden { opacity: 0; }
 
+/* ============================================================
+   日付フラッシュ（画面中央）
+   ============================================================ */
 #today-date {
   position: fixed;
   top: 38%;
@@ -86,68 +90,41 @@ html, body {
   transform: translate(-50%, -50%) scale(1);
 }
 
-#today-date.hidden {
-  display: none;
-}
+#today-date.hidden { display: none; }
 
 @media (max-width: 640px), (max-height: 500px) {
-  #today-date {
-    font-size: 48px;
-  }
+  #today-date { font-size: 48px; }
 }
 
-#observer-panel {
-  position: fixed;
-  right: 22px;
-  bottom: 22px;
-  width: 180px;
-  padding: 10px 10px 8px;
-  border-radius: 14px;
-  background: rgba(8, 10, 22, 0.36);
-  backdrop-filter: blur(12px) saturate(120%);
-  -webkit-backdrop-filter: blur(12px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.35);
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-#moon-mini-wrap {
-  position: relative;
-  width: 160px;
-  height: 160px;
-  margin: 0 auto;
-}
-
-#moon-mini {
-  display: block;
-  width: 160px;
-  height: 160px;
-}
-
+/* ============================================================
+   TODAY ボタン（独立：左下）
+   ============================================================ */
 #today-btn {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 32px;
-  height: 32px;
+  position: fixed;
+  bottom: 28px;
+  left: 28px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border-radius: 50%;
   border: 1px solid rgba(180, 255, 200, 0.45);
-  background: rgba(8, 10, 22, 0.6);
+  background: rgba(8, 10, 22, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: rgba(220, 255, 230, 0.82);
   font-family: "Cormorant Garamond", "Hiragino Mincho ProN", serif;
-  font-size: 8.5px;
+  font-size: 9px;
   font-style: italic;
   font-weight: 600;
   letter-spacing: 0.10em;
   line-height: 1;
-  text-transform: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  z-index: 100;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease,
+              color 0.2s ease, transform 0.2s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -158,10 +135,7 @@ html, body {
   transform: translateY(-1px);
 }
 
-#today-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 0 6px rgba(120, 255, 170, 0.5) inset;
-}
+#today-btn:active { transform: translateY(0); }
 
 #today-btn.is-active {
   border-color: rgba(180, 255, 200, 0.9);
@@ -169,26 +143,120 @@ html, body {
   box-shadow: 0 0 12px rgba(120, 255, 170, 0.5);
 }
 
-#country-selector {
-  position: relative;
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 4px;
+/* ============================================================
+   着地ピクトグラム（地球フォーカス時・画面下中央）
+   ============================================================ */
+#land-btn {
+  position: fixed;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 58px;
+  height: 74px;
+  padding: 9px 8px 7px;
+  border: 1.5px solid rgba(160, 210, 255, 0.45);
+  border-radius: 20px;
+  background: rgba(6, 10, 26, 0.48);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: rgba(190, 220, 255, 0.88);
+  cursor: pointer;
+  z-index: 100;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease,
+              opacity 0.3s ease, transform 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.flag-btn {
+#land-btn svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#land-btn:hover {
+  border-color: rgba(160, 210, 255, 0.9);
+  box-shadow: 0 0 20px rgba(100, 170, 255, 0.4);
+  transform: translateX(-50%) translateY(-3px);
+}
+
+#land-btn:active {
+  transform: translateX(-50%) translateY(0);
+}
+
+#land-btn.hidden { display: none; }
+
+/* ============================================================
+   地上視点 UI パネル（右側・地上視点時のみ表示）
+   ============================================================ */
+#ground-ui {
+  position: fixed;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  z-index: 100;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#ground-ui.hidden { display: none; }
+
+/* ジャンプピクトグラム（宇宙に戻る） */
+#jump-btn {
+  width: 58px;
+  height: 74px;
+  padding: 7px 8px 9px;
+  border: 1.5px solid rgba(160, 210, 255, 0.45);
+  border-radius: 20px;
+  background: rgba(6, 10, 26, 0.48);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: rgba(190, 220, 255, 0.88);
+  cursor: pointer;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#jump-btn svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#jump-btn:hover {
+  border-color: rgba(160, 210, 255, 0.9);
+  box-shadow: 0 0 20px rgba(100, 170, 255, 0.4);
+  transform: translateY(-3px);
+}
+
+#jump-btn:active { transform: translateY(0); }
+
+/* 国旗リスト（縦並び） */
+#ground-flags {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ground-flag-btn {
   appearance: none;
   -webkit-appearance: none;
+  display: block;
+  width: 54px;
+  height: 36px;
   padding: 0;
-  border: 1.5px solid transparent;
-  background: none;
-  cursor: pointer;
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
   border-radius: 6px;
   overflow: hidden;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease, opacity 0.2s ease;
+  background: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.flag-btn img {
+.ground-flag-btn img {
   width: 100%;
   height: 100%;
   display: block;
@@ -196,67 +264,35 @@ html, body {
   pointer-events: none;
 }
 
-.flag-btn:hover {
-  transform: translateY(-1px);
+.ground-flag-btn:hover {
+  border-color: rgba(180, 255, 200, 0.75);
+  box-shadow: 0 0 10px rgba(120, 255, 170, 0.3);
+  transform: translateX(-2px);
 }
 
-.flag-current {
-  width: 54px;
-  height: 36px;
-  border-color: rgba(180, 255, 200, 0.55);
-  box-shadow: 0 0 10px rgba(120, 255, 170, 0.26);
-}
-
-.flag-current:hover {
-  border-color: rgba(180, 255, 200, 0.9);
-  box-shadow: 0 0 16px rgba(120, 255, 170, 0.45);
-}
-
-#flag-menu {
-  position: absolute;
-  bottom: calc(100% + 6px);
-  right: 0;
-  display: grid;
-  grid-template-columns: repeat(5, 40px);
-  gap: 5px;
-  padding: 7px;
-  background: rgba(8, 10, 22, 0.82);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
-  transition: opacity 0.18s ease, transform 0.18s ease;
-}
-
-#flag-menu.hidden {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(6px);
-}
-
-.flag-option {
-  width: 40px;
-  height: 26px;
-}
-
-.flag-option:hover {
-  border-color: rgba(180, 255, 200, 0.8);
-}
-
-@media (max-width: 640px), (max-height: 500px) {
-  /* スマホでは観測小窓が画面を圧迫するため非表示。3Dの視認性を優先 */
-  #observer-panel { display: none; }
-
-  #month-number { font-size: 64px; }
-  #month-name { font-size: 14px; }
+.ground-flag-btn.selected {
+  border-color: rgba(180, 255, 200, 0.95);
+  box-shadow: 0 0 14px rgba(120, 255, 170, 0.5);
 }
 
 /* ============================================================
-   スマホ縦画面ガイド：3Dは横向き前提なので、縦時は全面で案内
+   レスポンシブ
+   ============================================================ */
+@media (max-width: 640px), (max-height: 500px) {
+  #month-number { font-size: 64px; }
+  #month-name   { font-size: 14px; }
+  #land-btn, #jump-btn {
+    width: 48px;
+    height: 60px;
+    padding: 7px 6px 5px;
+    border-radius: 16px;
+  }
+  .ground-flag-btn { width: 44px; height: 30px; }
+  #today-btn { width: 38px; height: 38px; font-size: 8px; }
+}
+
+/* ============================================================
+   スマホ縦画面ガイド
    ============================================================ */
 #orientation-gate {
   position: fixed;
@@ -275,12 +311,8 @@ html, body {
   touch-action: none;
 }
 
-.og-inner {
-  text-align: center;
-  padding: 0 24px;
-}
-
-.og-icon {
+.og-inner  { text-align: center; padding: 0 24px; }
+.og-icon   {
   font-size: 72px;
   line-height: 1;
   margin-bottom: 18px;
@@ -309,7 +341,6 @@ html, body {
   opacity: 0.6;
 }
 
-/* スマホサイズかつ縦向きのときだけ表示。タブレット以上は対象外 */
 @media (orientation: portrait) and (max-width: 900px) {
   #orientation-gate { display: flex; }
 }

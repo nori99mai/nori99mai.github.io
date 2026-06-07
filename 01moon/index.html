@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Pistilli&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=32" />
+  <link rel="stylesheet" href="style.css?v=33" />
   <script type="importmap">
   {
     "imports": {
@@ -22,25 +22,62 @@
 </head>
 <body>
   <canvas id="scene"></canvas>
+
   <div id="month-chip" class="hidden">
     <span id="month-number">1</span>
     <span id="month-name">January</span>
   </div>
   <div id="today-date" class="hidden" aria-hidden="true"></div>
-  <aside id="observer-panel">
-    <div id="moon-mini-wrap">
-      <canvas id="moon-mini" width="220" height="220"></canvas>
-      <button id="today-btn" type="button" aria-label="今日の月相に合わせる">
-        <span>TODAY</span>
-      </button>
-    </div>
-    <div id="country-selector">
-      <button id="current-flag" class="flag-btn flag-current" aria-label="観測国">
-        <img alt="" />
-      </button>
-      <div id="flag-menu" class="hidden"></div>
-    </div>
-  </aside>
+
+  <!-- TODAY ボタン（独立：左下） -->
+  <button id="today-btn" type="button" aria-label="今日の月相に合わせる">
+    <span>TODAY</span>
+  </button>
+
+  <!-- 着地ピクトグラム（地球フォーカス & 宇宙視点のときのみ表示） -->
+  <button id="land-btn" class="hidden" type="button" aria-label="地球に降り立つ">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 50" fill="none"
+         stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <!-- 頭 -->
+      <circle cx="18" cy="5" r="4" stroke-width="2.2"/>
+      <!-- 体 -->
+      <line x1="18" y1="9" x2="18" y2="22" stroke-width="2.2"/>
+      <!-- 腕（着地：横に大きく広げる） -->
+      <line x1="6"  y1="16" x2="30" y2="16" stroke-width="2.2"/>
+      <!-- 脚（着地：開いてかがむ） -->
+      <line x1="18" y1="22" x2="10" y2="33" stroke-width="2.2"/>
+      <line x1="18" y1="22" x2="26" y2="33" stroke-width="2.2"/>
+      <!-- 下向き矢印 -->
+      <line x1="18" y1="37" x2="18" y2="46" stroke-width="2"/>
+      <polyline points="13,41 18,46 23,41" stroke-width="2"/>
+    </svg>
+  </button>
+
+  <!-- 地上視点 UI（地上視点のときのみ表示） -->
+  <div id="ground-ui" class="hidden">
+    <!-- ジャンプピクトグラム（宇宙に戻る） -->
+    <button id="jump-btn" type="button" aria-label="宇宙に戻る">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 50" fill="none"
+           stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <!-- 上向き矢印 -->
+        <line x1="18" y1="2" x2="18" y2="11" stroke-width="2"/>
+        <polyline points="13,7 18,2 23,7" stroke-width="2"/>
+        <!-- 頭 -->
+        <circle cx="18" cy="18" r="4" stroke-width="2.2"/>
+        <!-- 体 -->
+        <line x1="18" y1="22" x2="18" y2="35" stroke-width="2.2"/>
+        <!-- 腕（ジャンプ：斜め上へ） -->
+        <line x1="18" y1="28" x2="7"  y2="22" stroke-width="2.2"/>
+        <line x1="18" y1="28" x2="29" y2="22" stroke-width="2.2"/>
+        <!-- 脚（ジャンプ：後方に蹴り上げ） -->
+        <line x1="18" y1="35" x2="11" y2="46" stroke-width="2.2"/>
+        <line x1="18" y1="35" x2="25" y2="46" stroke-width="2.2"/>
+      </svg>
+    </button>
+    <!-- 国旗リスト（JS で動的追加） -->
+    <div id="ground-flags"></div>
+  </div>
+
   <div id="orientation-gate" aria-hidden="true">
     <div class="og-inner">
       <div class="og-icon">📱</div>
@@ -48,6 +85,6 @@
       <div class="og-sub">Please rotate your device</div>
     </div>
   </div>
-  <script type="module" src="main.js?v=35"></script>
+  <script type="module" src="main.js?v=36"></script>
 </body>
 </html>
