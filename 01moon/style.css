@@ -318,28 +318,6 @@ html, body {
 }
 
 /* ============================================================
-   地上視点：右上日付表示
-   ============================================================ */
-#ground-date {
-  position: fixed;
-  top: 36px;
-  right: 36px;
-  color: rgba(220, 235, 255, 0.82);
-  font-family: "Cormorant Garamond", "Hiragino Mincho ProN", serif;
-  font-size: 28px;
-  font-style: italic;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  line-height: 1;
-  user-select: none;
-  pointer-events: none;
-  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.7);
-  z-index: 100;
-}
-
-#ground-date.hidden { display: none; }
-
-/* ============================================================
    レスポンシブ
    ============================================================ */
 @media (max-width: 640px), (max-height: 500px) {

@@ -767,6 +767,7 @@ let camTransition = null;
 let savedSpaceCamPos    = null;
 let savedSpaceCamTarget = null;
 
+
 // 緯度経度 → 地球ローカル座標
 function latLonToVec3(latDeg, lonDeg, radius) {
   const lat = THREE.MathUtils.degToRad(latDeg);
@@ -857,15 +858,6 @@ function aimAtEarth(worldPos, upDir) {
   groundElevation = THREE.MathUtils.clamp(elev, ELEVATION_MIN, ELEVATION_MAX);
 }
 
-// シミュレーション日付を "M/D" 形式で返す
-function simDateStr() {
-  const yearFrac   = ((earthAngle / (Math.PI * 2)) % 1 + 1) % 1;
-  const monthFloat = yearFrac * 12;
-  const monthIdx   = Math.floor(monthFloat);
-  const daysInMonth = new Date(2024, monthIdx + 1, 0).getDate();
-  const day = Math.floor((monthFloat - monthIdx) * daysInMonth) + 1;
-  return `${monthIdx + 1}/${day}`;
-}
 
 function easeInOut(t) {
   return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
@@ -912,11 +904,6 @@ function enterGroundView(body = 'earth') {
       // 月面着陸時は国旗UIを非表示
       const groundFlags = document.getElementById('ground-flags');
       if (groundFlags) groundFlags.classList.toggle('hidden', landingBody === 'moon');
-      const groundDateEl = document.getElementById('ground-date');
-      if (groundDateEl) {
-        groundDateEl.textContent = simDateStr();
-        groundDateEl.classList.remove('hidden');
-      }
       monthChip.classList.add('hidden');
     }
   };
@@ -965,9 +952,6 @@ function exitGroundView() {
       const groundFlags2 = document.getElementById('ground-flags');
       if (groundFlags2) groundFlags2.classList.remove('hidden');
       landingBody = null;
-      // 日付表示を隠す
-      const groundDateEl = document.getElementById('ground-date');
-      if (groundDateEl) groundDateEl.classList.add('hidden');
       // 月チップを復元
       if (!isPlaying) {
         const m = currentMonth();
@@ -1180,11 +1164,6 @@ function animate() {
     updateCameraTransition(dt);
   } else if (viewMode === 'ground') {
     updateGroundCamera();
-    // 日付表示を更新（速度0.05xでゆっくり変化するが毎フレーム同期）
-    const groundDateEl = document.getElementById('ground-date');
-    if (groundDateEl && !groundDateEl.classList.contains('hidden')) {
-      groundDateEl.textContent = simDateStr();
-    }
   } else {
     updateFocus();
     controls.update();
