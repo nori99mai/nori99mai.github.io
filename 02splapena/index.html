@@ -439,14 +439,14 @@
           </tr>
           <tr>
             <td>/splapena reset</td>
-            <td>ペナルティをデフォルト25件にリセット（サーバー管理者のみ）</td>
+            <td>ペナルティをデフォルト33件にリセット（サーバー管理者のみ）</td>
           </tr>
         </tbody>
       </table>
     </div>
     <p class="cmd-note">
       BOT導入後、VCのチャットで <code style="font-family:'Courier New',monospace;font-size:13px;font-weight:700;">/splapena</code> と入力すると候補が表示されます。選ぶだけでOK、スマホでも簡単です。<br>
-      ペナルティはもともと25個入っており、好きなものを追加・削除できます（サーバーごとに管理）。
+      ペナルティはもともと33個入っており、好きなものを追加・削除できます（サーバーごとに管理）。
     </p>
   </section>
 
@@ -463,63 +463,64 @@
         <div class="pena-item"><span class="pena-num">01</span>ショクワンダーブキを使う</div>
         <div class="pena-item"><span class="pena-num">02</span>竹ブキ使用</div>
         <div class="pena-item"><span class="pena-num">03</span>アメフラシブキを使う</div>
-        <div class="pena-item"><span class="pena-num">04</span>弓ブキを使う</div>
-        <div class="pena-item"><span class="pena-num">05</span>筆ブキを使う</div>
+        <div class="pena-item"><span class="pena-num">04</span>シューター種のどれかを使用</div>
+        <div class="pena-item"><span class="pena-num">05</span>ブラスター種のどれかを使用</div>
+        <div class="pena-item"><span class="pena-num">06</span>ローラー種のどれかを使用</div>
+        <div class="pena-item"><span class="pena-num">07</span>フデ種のどれかを使用</div>
+        <div class="pena-item"><span class="pena-num">08</span>スピナー種のどれかを使用</div>
+        <div class="pena-item"><span class="pena-num">09</span>シェルター種のどれかを使用</div>
+        <div class="pena-item"><span class="pena-num">10</span>弓種のどれかを使用</div>
       </div>
     </div>
 
     <!-- OPERATION -->
     <div class="pena-block">
-      <div class="pena-category">OPERATION — 操作縛り</div>
+      <div class="pena-category">OPERATION — 動き・操作縛り</div>
       <div class="pena-grid">
-        <div class="pena-item"><span class="pena-num">06</span>イカ状態禁止</div>
-        <div class="pena-item"><span class="pena-num">07</span>ジャンプ禁止</div>
-        <div class="pena-item"><span class="pena-num">08</span>マニュ系ブキでスライド禁止</div>
-        <div class="pena-item"><span class="pena-num">09</span>ヒト状態禁止（攻撃時除く）</div>
-        <div class="pena-item"><span class="pena-num">10</span>サブ禁止</div>
-        <div class="pena-item"><span class="pena-num">11</span>スーパージャンプ禁止</div>
-        <div class="pena-item"><span class="pena-num">12</span>ルール関与禁止</div>
+        <div class="pena-item"><span class="pena-num">11</span>イカ状態禁止</div>
+        <div class="pena-item"><span class="pena-num">12</span>ジャンプ禁止</div>
+        <div class="pena-item"><span class="pena-num">13</span>マニュ系ブキでスライド禁止</div>
+        <div class="pena-item"><span class="pena-num">14</span>ヒト状態禁止（攻撃時除く）</div>
+        <div class="pena-item"><span class="pena-num">15</span>サブ禁止</div>
+        <div class="pena-item"><span class="pena-num">16</span>スーパージャンプ禁止</div>
+        <div class="pena-item"><span class="pena-num">17</span>ジャイロを-5にする</div>
+        <div class="pena-item"><span class="pena-num">18</span>立ってプレイ</div>
       </div>
     </div>
 
-    <!-- HANDICAP -->
+    <!-- RULE -->
     <div class="pena-block">
-      <div class="pena-category">HANDICAP — ハンデ</div>
+      <div class="pena-category">RULE — ルール・立ち回り縛り</div>
       <div class="pena-grid">
-        <div class="pena-item"><span class="pena-num">13</span>セルフペナアップ（リス後3秒待機）</div>
-        <div class="pena-item"><span class="pena-num">14</span>リスポーン後、最大3秒間目を閉じてプレイ</div>
-        <div class="pena-item"><span class="pena-num">15</span>立ってプレイ</div>
+        <div class="pena-item"><span class="pena-num">19</span>ルール関与禁止</div>
+        <div class="pena-item"><span class="pena-num">20</span>ルール関与のみしてよい（塗りはOK、キルはNG）</div>
+        <div class="pena-item"><span class="pena-num">21</span>セルフペナアップ（リス後3秒待機）</div>
+        <div class="pena-item"><span class="pena-num">22</span>キルを取ったら3秒間その場で煽り行為</div>
+        <div class="pena-item"><span class="pena-num">23</span>デスしたらリス時に最前線の味方にジャンプする</div>
+        <div class="pena-item"><span class="pena-num">24</span>好きなペナルティを誰か一人に押しつけ</div>
       </div>
     </div>
 
     <!-- ACTION -->
     <div class="pena-block">
-      <div class="pena-category">ACTION — 行動ノルマ</div>
+      <div class="pena-category">ACTION — デス時・行動ペナ</div>
       <div class="pena-grid">
-        <div class="pena-item"><span class="pena-num">16</span>キルを取ったら3秒間その場で煽り行為</div>
-        <div class="pena-item"><span class="pena-num">17</span>デスしたら腹筋３回</div>
-        <div class="pena-item"><span class="pena-num">18</span>デスしたらスクワット3回</div>
-        <div class="pena-item"><span class="pena-num">19</span>デスしたら腕立て3回</div>
-        <div class="pena-item"><span class="pena-num">20</span>デスしたらリス時に最前線の味方にジャンプする</div>
+        <div class="pena-item"><span class="pena-num">25</span>デスしたら腹筋３回</div>
+        <div class="pena-item"><span class="pena-num">26</span>デスしたらスクワット3回</div>
+        <div class="pena-item"><span class="pena-num">27</span>デスしたら腕立て3回</div>
       </div>
     </div>
 
     <!-- TALK -->
     <div class="pena-block">
-      <div class="pena-category">TALK — しゃべり縛り</div>
+      <div class="pena-category">TALK — デス時・言語ペナ</div>
       <div class="pena-grid">
-        <div class="pena-item"><span class="pena-num">21</span>デスするたびにお嬢様言葉を話す</div>
-        <div class="pena-item"><span class="pena-num">22</span>デスしたら語尾にゃん</div>
-        <div class="pena-item"><span class="pena-num">23</span>デスしたらお礼を言う</div>
-        <div class="pena-item"><span class="pena-num">24</span>デスしたら猫になる（次のデスまでにゃーしか言えない）</div>
-      </div>
-    </div>
-
-    <!-- JOKER -->
-    <div class="pena-block">
-      <div class="pena-category">JOKER — 特殊</div>
-      <div class="pena-grid">
-        <div class="pena-item"><span class="pena-num">25</span>好きなペナルティを誰か一人に押しつけ</div>
+        <div class="pena-item"><span class="pena-num">28</span>デスしたら次のデスまでお嬢様言葉を話す</div>
+        <div class="pena-item"><span class="pena-num">29</span>デスしたら次のデスまで語尾にゃん</div>
+        <div class="pena-item"><span class="pena-num">30</span>デスしたら次のデスまでお礼を言う</div>
+        <div class="pena-item"><span class="pena-num">31</span>デスしたら次のデスまでにゃーしか言えない</div>
+        <div class="pena-item"><span class="pena-num">32</span>デスしたら次のデスまでバブ語を使う</div>
+        <div class="pena-item"><span class="pena-num">33</span>デスしたら次のデスまでシオカラ節を歌う</div>
       </div>
     </div>
 
