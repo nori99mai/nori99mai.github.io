@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スプラ動画フレーム — 検証版(BOKE-1)</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    margin: 0; padding: 20px; background: #11131a; color: #eef; line-height: 1.6;
+    max-width: 560px; margin-inline: auto;
+  }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: #8b93a7; margin-bottom: 20px; }
+  .card { background: #1b1e29; border: 1px solid #2a2f40; border-radius: 14px; padding: 18px; margin-bottom: 16px; }
+  label.file {
+    display: block; text-align: center; padding: 22px 14px; border: 2px dashed #3a4a6a;
+    border-radius: 12px; cursor: pointer; background: #161922; transition: .2s;
+  }
+  input[type=file] { display: none; }
+  .btn {
+    display: block; width: 100%; padding: 16px; font-size: 16px; font-weight: 700;
+    border: none; border-radius: 12px; background: #4f7cff; color: #fff; cursor: pointer; margin-top: 12px;
+  }
+  .btn:disabled { background: #39405a; color: #7b8198; cursor: default; }
+  .status { font-size: 13px; color: #9aa3ba; min-height: 20px; white-space: pre-wrap; }
+  .bar { height: 8px; background: #2a2f40; border-radius: 6px; overflow: hidden; margin: 10px 0; }
+  .bar > i { display: block; height: 100%; width: 0; background: #4f7cff; transition: width .2s; }
+  video { width: 100%; border-radius: 10px; background: #000; margin-top: 8px; }
+  a.dl { display: block; text-align: center; padding: 14px; background: #2bd576; color: #062; font-weight: 700; border-radius: 12px; text-decoration: none; margin-top: 12px; }
+  .note { font-size: 12px; color: #8b93a7; margin-top: 10px; }
+</style>
+</head>
+<body>
+  <h1>スプラ動画フレーム <span style="color:#4f7cff">検証版</span></h1>
+  <div class="sub">Phase 1 技術検証 / 演出「BOKE-1：モノクロ＋鐘」のみ。スマホで落ちずに書き出せるかの確認用です。</div>
+
+  <div class="card">
+    <label class="file" id="picker">
+      🎬 タップして動画を選ぶ
+      <input type="file" id="file" accept="video/*">
+    </label>
+    <div class="note" id="picked"></div>
+    <button class="btn" id="go" disabled>装飾をつけて書き出す</button>
+    <div class="bar"><i id="prog"></i></div>
+    <div class="status" id="status">準備OK。動画を選んでください。</div>
+  </div>
+
+  <div class="card" id="resultCard" style="display:none">
+    <strong>仕上がりプレビュー</strong>
+    <video id="out" controls playsinline></video>
+    <a class="dl" id="dl" download="splatoon_boke1.mp4">⬇ 動画を保存する</a>
+    <div class="note">iPhoneの場合：保存ボタン→共有メニューから「ビデオを保存」を選ぶとカメラロールに入ります。</div>
+  </div>
+
+<script src="vendor/ffmpeg.js"></script>
+<script src="vendor/util.js"></script>
+<script>
+const TAIL = 3; // ラスト何秒に演出を乗せるか
+const $ = id => document.getElementById(id);
+let ffmpeg = null, chosen = null;
+
+const setStatus = (m) => { $('status').textContent = m; };
+const setProg = (p) => { $('prog').style.width = Math.round(p*100) + '%'; };
+
+$('file').addEventListener('change', e => {
+  chosen = e.target.files[0] || null;
+  if (chosen) {
+    $('picked').textContent = '選択: ' + chosen.name + ' (' + (chosen.size/1048576).toFixed(1) + 'MB)';
+    $('go').disabled = false;
+    setStatus('準備OK。「装飾をつけて書き出す」を押してください。');
+  }
+});
+
+function videoDuration(file) {
+  return new Promise((resolve) => {
+    const v = document.createElement('video');
+    v.preload = 'metadata';
+    v.onloadedmetadata = () => { resolve(v.duration); URL.revokeObjectURL(v.src); };
+    v.onerror = () => resolve(NaN);
+    v.src = URL.createObjectURL(file);
+  });
+}
+
+async function loadFFmpeg() {
+  if (ffmpeg) return ffmpeg;
+  setStatus('処理エンジンを読み込み中…（初回は時間がかかります）');
+  const { FFmpeg } = FFmpegWASM;
+  ffmpeg = new FFmpeg();
+  ffmpeg.on('log', ({ message }) => { (window.__fflog ||= []).push(message); console.log('[ffmpeg]', message); });
+  ffmpeg.on('progress', ({ progress }) => { if (progress >= 0 && progress <= 1) setProg(progress); });
+  const abs = (p) => new URL(p, location.href).href;
+  await ffmpeg.load({
+    classWorkerURL: abs('vendor/814.ffmpeg.js'),
+    coreURL: abs('vendor/ffmpeg-core.js'),
+    wasmURL: abs('vendor/ffmpeg-core.wasm'),
+  });
+  return ffmpeg;
+}
+
+async function run() {
+  $('go').disabled = true;
+  $('resultCard').style.display = 'none';
+  setProg(0);
+  try {
+    const dur = await videoDuration(chosen);
+    const T = (isFinite(dur) && dur > TAIL) ? +(dur - TAIL).toFixed(2) : 0;
+    const Tms = Math.round(T * 1000);
+
+    const ff = await loadFFmpeg();
+    const { fetchFile } = FFmpegUtil;
+
+    setStatus('動画を読み込み中…');
+    await ff.writeFile('in.mp4', await fetchFile(chosen));
+    await ff.writeFile('bell.wav', await fetchFile('bell.wav'));
+
+    // 音声トラックの有無を事前検出（無参照でabortする経路を避ける）
+    window.__fflog = [];
+    try { await ff.exec(['-hide_banner','-i','in.mp4']); } catch (_) { /* 出力未指定で正常にエラー終了する */ }
+    const hasAudio = (window.__fflog || []).some(l => /Stream #0:\d+.*Audio/i.test(l));
+
+    setStatus('装飾を焼き込み中…（スマホだと数十秒かかることがあります）');
+
+    const vGray = `[0:v]scale=-2:720,hue=s=0:enable='gte(t,${T})'[v]`;
+    const bell  = `[1:a]adelay=${Tms}|${Tms}[b]`;
+    const tail  = ['-c:v','libx264','-preset','ultrafast','-pix_fmt','yuv420p','-crf','23','-c:a','aac','-b:a','128k','-movflags','+faststart','out.mp4'];
+
+    let cmd;
+    if (hasAudio) {
+      // 元の音＋鐘をミックス
+      cmd = ['-i','in.mp4','-i','bell.wav','-filter_complex',
+        `${vGray};${bell};[0:a][b]amix=inputs=2:duration=first:normalize=0[a]`,
+        '-map','[v]','-map','[a]', ...tail];
+    } else {
+      // 元動画に音が無い → 鐘だけ
+      cmd = ['-i','in.mp4','-i','bell.wav','-filter_complex',
+        `${vGray};${bell}`,
+        '-map','[v]','-map','[b]', ...tail];
+    }
+    await ff.exec(cmd);
+
+    setStatus('仕上げ中…');
+    const data = await ff.readFile('out.mp4');
+    const blob = new Blob([data.buffer], { type: 'video/mp4' });
+    const url = URL.createObjectURL(blob);
+    $('out').src = url;
+    $('dl').href = url;
+    $('resultCard').style.display = 'block';
+    setProg(1);
+    setStatus('完成！下のプレビューで確認 → 保存できます。');
+  } catch (err) {
+    console.error(err);
+    setStatus('エラー: ' + (err && err.message ? err.message : err) + '\nこの端末では処理が重すぎた可能性があります。');
+  } finally {
+    $('go').disabled = false;
+  }
+}
+
+$('go').addEventListener('click', run);
+window.__appReady = true;
+</script>
+</body>
+</html>
