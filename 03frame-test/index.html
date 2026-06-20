@@ -57,7 +57,6 @@
 <script src="vendor/ffmpeg.js"></script>
 <script src="vendor/util.js"></script>
 <script>
-const TAIL = 3; // ラスト何秒に演出を乗せるか
 const $ = id => document.getElementById(id);
 let ffmpeg = null, chosen = null, lastUrl = null;
 
@@ -111,10 +110,6 @@ async function run() {
   $('resultCard').style.display = 'none';
   setProg(0);
   try {
-    const dur = await videoDuration(chosen);
-    const T = (isFinite(dur) && dur > TAIL) ? +(dur - TAIL).toFixed(2) : 0;
-    const Tms = Math.round(T * 1000);
-
     const ff = await loadFFmpeg();
     const { fetchFile } = FFmpegUtil;
 
@@ -122,28 +117,37 @@ async function run() {
     await ff.writeFile('in.mp4', await fetchFile(chosen));
     await ff.writeFile('bell.wav', await fetchFile('bell.wav'));
 
-    // 音声トラックの有無を事前検出（無参照でabortする経路を避ける）
+    // 音声トラックの有無＋尺を事前検出
     window.__fflog = [];
     try { await ff.exec(['-hide_banner','-i','in.mp4']); } catch (_) { /* 出力未指定で正常にエラー終了する */ }
-    const hasAudio = (window.__fflog || []).some(l => /Stream #0:\d+.*Audio/i.test(l));
+    const log = window.__fflog || [];
+    const hasAudio = log.some(l => /Stream #0:\d+.*Audio/i.test(l));
+    let D = await videoDuration(chosen);
+    const dm = (log.find(l => /Duration: \d+:\d+:\d+/.test(l)) || '').match(/Duration: (\d+):(\d+):(\d+(?:\.\d+)?)/);
+    if (dm) D = (+dm[1]) * 3600 + (+dm[2]) * 60 + parseFloat(dm[3]);
+    if (!isFinite(D) || D <= 0) D = 0;
+    const Dms = Math.round(D * 1000);
+    const HOLD = 3;                          // 動画終了後、静止＋白黒＋鐘を持続させる秒数
+    const total = (D + HOLD).toFixed(2);
 
     setStatus('装飾を焼き込み中…（スマホだと数十秒かかることがあります）');
 
-    const vGray = `[0:v]scale=-2:720,hue=s=0:enable='gte(t,${T})'[v]`;
-    const bell  = `[1:a]adelay=${Tms}|${Tms}[b]`;
-    const tail  = ['-c:v','libx264','-preset','ultrafast','-pix_fmt','yuv420p','-crf','23','-c:a','aac','-b:a','128k','-movflags','+faststart','out.mp4'];
+    // 本編はそのまま → 終わった瞬間に最後のコマで静止し、白黒化＋鐘。HOLD秒持続させる
+    const vid  = `[0:v]scale=-2:720,tpad=stop_mode=clone:stop_duration=${HOLD},hue=s=0:enable='gte(t,${D})'[v]`;
+    const bell = `[1:a]adelay=${Dms}|${Dms}[b]`;
+    const enc  = ['-c:v','libx264','-preset','ultrafast','-pix_fmt','yuv420p','-crf','23','-c:a','aac','-b:a','128k','-movflags','+faststart','-t',total,'out.mp4'];
 
     let cmd;
     if (hasAudio) {
-      // 元の音＋鐘をミックス
+      // 本編の音はそのまま、静止に入った瞬間から鐘を重ねる
       cmd = ['-i','in.mp4','-i','bell.wav','-filter_complex',
-        `${vGray};${bell};[0:a][b]amix=inputs=2:duration=first:normalize=0[a]`,
-        '-map','[v]','-map','[a]', ...tail];
+        `${vid};${bell};[0:a][b]amix=inputs=2:duration=longest:normalize=0[a]`,
+        '-map','[v]','-map','[a]', ...enc];
     } else {
       // 元動画に音が無い → 鐘だけ
       cmd = ['-i','in.mp4','-i','bell.wav','-filter_complex',
-        `${vGray};${bell}`,
-        '-map','[v]','-map','[b]', ...tail];
+        `${vid};${bell}`,
+        '-map','[v]','-map','[b]', ...enc];
     }
     await ff.exec(cmd);
 
