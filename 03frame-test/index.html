@@ -59,7 +59,7 @@
 <script>
 const TAIL = 3; // ラスト何秒に演出を乗せるか
 const $ = id => document.getElementById(id);
-let ffmpeg = null, chosen = null;
+let ffmpeg = null, chosen = null, lastUrl = null;
 
 const setStatus = (m) => { $('status').textContent = m; };
 const setProg = (p) => { $('prog').style.width = Math.round(p*100) + '%'; };
@@ -99,8 +99,15 @@ async function loadFFmpeg() {
   return ffmpeg;
 }
 
+function lockUI(lock) {
+  $('go').disabled = lock;
+  $('file').disabled = lock;
+  $('picker').style.pointerEvents = lock ? 'none' : '';
+  $('picker').style.opacity = lock ? '0.5' : '';
+}
+
 async function run() {
-  $('go').disabled = true;
+  lockUI(true);
   $('resultCard').style.display = 'none';
   setProg(0);
   try {
@@ -143,7 +150,14 @@ async function run() {
     setStatus('仕上げ中…');
     const data = await ff.readFile('out.mp4');
     const blob = new Blob([data.buffer], { type: 'video/mp4' });
+
+    // 内部FSを掃除してメモリを解放（スマホのメモリ対策）
+    for (const f of ['in.mp4', 'out.mp4']) { try { await ff.deleteFile(f); } catch (_) {} }
+
+    // 前回の出力URLを解放してから差し替え（メモリ漏れ防止）
+    if (lastUrl) { URL.revokeObjectURL(lastUrl); lastUrl = null; }
     const url = URL.createObjectURL(blob);
+    lastUrl = url;
     $('out').src = url;
     $('dl').href = url;
     $('resultCard').style.display = 'block';
@@ -151,9 +165,10 @@ async function run() {
     setStatus('完成！下のプレビューで確認 → 保存できます。');
   } catch (err) {
     console.error(err);
-    setStatus('エラー: ' + (err && err.message ? err.message : err) + '\nこの端末では処理が重すぎた可能性があります。');
+    const msg = (err && err.message) ? err.message : String(err);
+    setStatus('エラー: ' + msg + '\n（途中で固まった/落ちた場合は、この端末には処理が重すぎた可能性があります）');
   } finally {
-    $('go').disabled = false;
+    lockUI(false);
   }
 }
 
