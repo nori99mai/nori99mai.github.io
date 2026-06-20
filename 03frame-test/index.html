@@ -30,11 +30,14 @@
   video { width: 100%; border-radius: 10px; background: #000; margin-top: 8px; }
   a.dl { display: block; text-align: center; padding: 14px; background: #2bd576; color: #062; font-weight: 700; border-radius: 12px; text-decoration: none; margin-top: 12px; }
   .note { font-size: 12px; color: #8b93a7; margin-top: 10px; }
+  .scrub-wrap { margin-top: 12px; }
+  .scrub-label { font-size: 13px; color: #cdd6f4; font-weight: 700; margin-bottom: 6px; }
+  input[type=range] { width: 100%; accent-color: #4f7cff; height: 28px; }
 </style>
 </head>
 <body>
   <h1>スプラ動画フレーム <span style="color:#4f7cff">検証版</span></h1>
-  <div class="sub">Phase 1 技術検証 / 演出「BOKE-1：モノクロ＋鐘」のみ。スマホで落ちずに書き出せるかの確認用です。</div>
+  <div class="sub">Phase 1 技術検証 / 演出「BOKE-1：静止＋白黒＋鐘」。決めの瞬間を選んで書き出します。</div>
 
   <div class="card">
     <label class="file" id="picker">
@@ -42,6 +45,16 @@
       <input type="file" id="file" accept="video/*">
     </label>
     <div class="note" id="picked"></div>
+
+    <div id="editor" style="display:none">
+      <video id="preview" playsinline muted></video>
+      <div class="scrub-wrap">
+        <div class="scrub-label" id="scrubLabel">決めの瞬間：—</div>
+        <input type="range" id="scrub" min="0" max="100" value="100" step="0.05">
+        <div class="note">スライダーを動かして「ここで止めたい！」という瞬間を選んでください。本編はそこまで再生され、その瞬間で静止＋白黒＋鐘が3秒鳴ります。</div>
+      </div>
+    </div>
+
     <button class="btn" id="go" disabled>装飾をつけて書き出す</button>
     <div class="bar"><i id="prog"></i></div>
     <div class="status" id="status">準備OK。動画を選んでください。</div>
@@ -57,29 +70,51 @@
 <script src="vendor/ffmpeg.js"></script>
 <script src="vendor/util.js"></script>
 <script>
+const HOLD = 3; // 静止＋白黒＋鐘を持続させる秒数
 const $ = id => document.getElementById(id);
-let ffmpeg = null, chosen = null, lastUrl = null;
+let ffmpeg = null, chosen = null, lastUrl = null, previewUrl = null, videoDur = 0;
 
 const setStatus = (m) => { $('status').textContent = m; };
 const setProg = (p) => { $('prog').style.width = Math.round(p*100) + '%'; };
+const fmt = (s) => { s = Math.max(0, s); const m = Math.floor(s/60); const r = (s%60).toFixed(1); return `${m}:${r.padStart(4,'0')}`; };
+
+function updateScrubLabel() {
+  $('scrubLabel').textContent = '決めの瞬間：' + fmt(parseFloat($('scrub').value)) + ' / ' + fmt(videoDur);
+}
 
 $('file').addEventListener('change', e => {
   chosen = e.target.files[0] || null;
-  if (chosen) {
-    $('picked').textContent = '選択: ' + chosen.name + ' (' + (chosen.size/1048576).toFixed(1) + 'MB)';
+  if (!chosen) return;
+  $('picked').textContent = '選択: ' + chosen.name + ' (' + (chosen.size/1048576).toFixed(1) + 'MB)';
+  if (previewUrl) URL.revokeObjectURL(previewUrl);
+  previewUrl = URL.createObjectURL(chosen);
+  const pv = $('preview');
+  pv.src = previewUrl;
+  pv.onloadedmetadata = () => {
+    videoDur = pv.duration || 0;
+    const sc = $('scrub');
+    sc.max = videoDur.toFixed(2);
+    sc.value = videoDur.toFixed(2);      // 既定は末尾
+    pv.currentTime = Math.max(0, videoDur - 0.05);
+    updateScrubLabel();
+    $('editor').style.display = 'block';
     $('go').disabled = false;
-    setStatus('準備OK。「装飾をつけて書き出す」を押してください。');
-  }
+    setStatus('決めの瞬間を選んで「装飾をつけて書き出す」を押してください。');
+  };
 });
 
-function videoDuration(file) {
-  return new Promise((resolve) => {
-    const v = document.createElement('video');
-    v.preload = 'metadata';
-    v.onloadedmetadata = () => { resolve(v.duration); URL.revokeObjectURL(v.src); };
-    v.onerror = () => resolve(NaN);
-    v.src = URL.createObjectURL(file);
-  });
+$('scrub').addEventListener('input', () => {
+  const pv = $('preview');
+  pv.currentTime = parseFloat($('scrub').value);
+  updateScrubLabel();
+});
+
+function lockUI(lock) {
+  $('go').disabled = lock;
+  $('file').disabled = lock;
+  $('scrub').disabled = lock;
+  $('picker').style.pointerEvents = lock ? 'none' : '';
+  $('picker').style.opacity = lock ? '0.5' : '';
 }
 
 async function loadFFmpeg() {
@@ -98,11 +133,10 @@ async function loadFFmpeg() {
   return ffmpeg;
 }
 
-function lockUI(lock) {
-  $('go').disabled = lock;
-  $('file').disabled = lock;
-  $('picker').style.pointerEvents = lock ? 'none' : '';
-  $('picker').style.opacity = lock ? '0.5' : '';
+// 本物の鐘(bell.mp3)があれば優先、無ければ合成のbell.wav
+async function pickBellFile() {
+  try { const r = await fetch('bell.mp3', { method: 'HEAD' }); if (r.ok) return 'bell.mp3'; } catch (_) {}
+  return 'bell.wav';
 }
 
 async function run() {
@@ -114,38 +148,35 @@ async function run() {
     const { fetchFile } = FFmpegUtil;
 
     setStatus('動画を読み込み中…');
+    const bellName = await pickBellFile();
     await ff.writeFile('in.mp4', await fetchFile(chosen));
-    await ff.writeFile('bell.wav', await fetchFile('bell.wav'));
+    await ff.writeFile(bellName, await fetchFile(bellName));
 
-    // 音声トラックの有無＋尺を事前検出
+    // 音声トラックの有無を事前検出（無参照でabortする経路を避ける）
     window.__fflog = [];
     try { await ff.exec(['-hide_banner','-i','in.mp4']); } catch (_) { /* 出力未指定で正常にエラー終了する */ }
-    const log = window.__fflog || [];
-    const hasAudio = log.some(l => /Stream #0:\d+.*Audio/i.test(l));
-    let D = await videoDuration(chosen);
-    const dm = (log.find(l => /Duration: \d+:\d+:\d+/.test(l)) || '').match(/Duration: (\d+):(\d+):(\d+(?:\.\d+)?)/);
-    if (dm) D = (+dm[1]) * 3600 + (+dm[2]) * 60 + parseFloat(dm[3]);
-    if (!isFinite(D) || D <= 0) D = 0;
-    const Dms = Math.round(D * 1000);
-    const HOLD = 3;                          // 動画終了後、静止＋白黒＋鐘を持続させる秒数
-    const total = (D + HOLD).toFixed(2);
+    const hasAudio = (window.__fflog || []).some(l => /Stream #0:\d+.*Audio/i.test(l));
+
+    // 決めの瞬間（フリーズ点）
+    const tf = Math.max(0.1, Math.min(videoDur || 9999, parseFloat($('scrub').value) || videoDur));
+    const tfms = Math.round(tf * 1000);
+    const total = (tf + HOLD).toFixed(2);
 
     setStatus('装飾を焼き込み中…（スマホだと数十秒かかることがあります）');
 
-    // 本編はそのまま → 終わった瞬間に最後のコマで静止し、白黒化＋鐘。HOLD秒持続させる
-    const vid  = `[0:v]scale=-2:720,tpad=stop_mode=clone:stop_duration=${HOLD},hue=s=0:enable='gte(t,${D})'[v]`;
-    const bell = `[1:a]adelay=${Dms}|${Dms}[b]`;
+    // 本編は決めの瞬間まで再生 → そこで最後のコマを静止＋白黒化＋鐘、HOLD秒持続
+    const vid  = `[0:v]trim=0:${tf},setpts=PTS-STARTPTS,scale=-2:720,tpad=stop_mode=clone:stop_duration=${HOLD},hue=s=0:enable='gte(t,${tf})'[v]`;
+    const bell = `[1:a]adelay=${tfms}|${tfms}[b]`;
     const enc  = ['-c:v','libx264','-preset','ultrafast','-pix_fmt','yuv420p','-crf','23','-c:a','aac','-b:a','128k','-movflags','+faststart','-t',total,'out.mp4'];
 
     let cmd;
     if (hasAudio) {
-      // 本編の音はそのまま、静止に入った瞬間から鐘を重ねる
-      cmd = ['-i','in.mp4','-i','bell.wav','-filter_complex',
-        `${vid};${bell};[0:a][b]amix=inputs=2:duration=longest:normalize=0[a]`,
+      const a0 = `[0:a]atrim=0:${tf},asetpts=PTS-STARTPTS[a0]`;
+      cmd = ['-i','in.mp4','-i',bellName,'-filter_complex',
+        `${vid};${a0};${bell};[a0][b]amix=inputs=2:duration=longest:normalize=0[a]`,
         '-map','[v]','-map','[a]', ...enc];
     } else {
-      // 元動画に音が無い → 鐘だけ
-      cmd = ['-i','in.mp4','-i','bell.wav','-filter_complex',
+      cmd = ['-i','in.mp4','-i',bellName,'-filter_complex',
         `${vid};${bell}`,
         '-map','[v]','-map','[b]', ...enc];
     }
