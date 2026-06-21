@@ -47,7 +47,7 @@
     <div class="note" id="picked"></div>
 
     <div id="editor" style="display:none">
-      <video id="preview" playsinline muted></video>
+      <video id="preview" playsinline muted preload="auto" controls></video>
       <div class="scrub-wrap">
         <div class="scrub-label" id="scrubLabel">決めの瞬間：—</div>
         <input type="range" id="scrub" min="0" max="100" value="100" step="0.05">
@@ -89,23 +89,36 @@ $('file').addEventListener('change', e => {
   if (previewUrl) URL.revokeObjectURL(previewUrl);
   previewUrl = URL.createObjectURL(chosen);
   const pv = $('preview');
+  // 先にエディタを表示してから動画を読み込む（iOSは非表示videoのフレームを描画しないため）
+  $('editor').style.display = 'block';
   pv.src = previewUrl;
+  pv.load();
   pv.onloadedmetadata = () => {
     videoDur = pv.duration || 0;
     const sc = $('scrub');
     sc.max = videoDur.toFixed(2);
     sc.value = videoDur.toFixed(2);      // 既定は末尾
-    pv.currentTime = Math.max(0, videoDur - 0.05);
     updateScrubLabel();
-    $('editor').style.display = 'block';
     $('go').disabled = false;
     setStatus('決めの瞬間を選んで「装飾をつけて書き出す」を押してください。');
   };
+  // フレーム描画を確実にする：一度muted再生→即停止でiOSにフレームを出させ、末尾へシーク
+  pv.onloadeddata = async () => {
+    try { await pv.play(); pv.pause(); } catch (_) {}
+    seekPreview(Math.max(0, (pv.duration || 0) - 0.05));
+  };
 });
 
-$('scrub').addEventListener('input', () => {
+// プレビューを安全にシーク（seekable範囲にクランプ）
+function seekPreview(t) {
   const pv = $('preview');
-  pv.currentTime = parseFloat($('scrub').value);
+  const dur = pv.duration || 0;
+  let tt = Math.max(0, Math.min(t, Math.max(0, dur - 0.03)));
+  try { pv.currentTime = tt; } catch (_) {}
+}
+
+$('scrub').addEventListener('input', () => {
+  seekPreview(parseFloat($('scrub').value));
   updateScrubLabel();
 });
 
