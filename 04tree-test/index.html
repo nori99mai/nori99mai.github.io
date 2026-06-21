@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>木をそだてよう（Phase1プロト）</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- スタート -->
+  <section class="screen" id="screen-start">
+    <h1 class="title">木をそだてよう</h1>
+    <p class="subtitle">10びょう　タップでおおきくなる！</p>
+    <button class="btn btn-primary" id="btn-play">あそぶ</button>
+    <button class="btn btn-ghost" id="btn-star">星を見る</button>
+    <p class="phase-note">Phase1プロト（仮の絵・保存なし）</p>
+  </section>
+
+  <!-- チュートリアル（初回のみ） -->
+  <section class="screen hidden" id="screen-tutorial">
+    <div class="tuto-card">
+      <div class="tuto-emoji">👆🌱</div>
+      <h2>タップすると<br>木が育つよ！</h2>
+      <p>10びょうのあいだ、<br>がんばって連打してね。<br>はやく叩くほど大きくなる！</p>
+      <button class="btn btn-primary" id="btn-tutorial-start">はじめる</button>
+    </div>
+  </section>
+
+  <!-- 3・2・1 -->
+  <section class="screen hidden" id="screen-countdown">
+    <div class="count-big" id="count-big">3</div>
+  </section>
+
+  <!-- 育成 -->
+  <section class="screen hidden" id="screen-play">
+    <div class="hud">
+      <div class="timer" id="timer">10.0</div>
+      <div class="combo" id="combo"></div>
+    </div>
+    <div class="ground"></div>
+    <div class="tree-wrap" id="tree-wrap-play"></div>
+    <div class="fx-layer" id="fx-play"></div>
+    <div class="float-layer" id="float-play"></div>
+    <div class="tap-catch" id="tap-catch"></div>
+    <div class="flash" id="flash"></div>
+  </section>
+
+  <!-- 結果 -->
+  <section class="screen hidden" id="screen-result">
+    <div class="ground"></div>
+    <div class="tree-wrap" id="tree-wrap-result"></div>
+    <div class="result-card">
+      <div class="result-row"><span>しんちょう</span><b id="res-cm">0</b><span>cm</span></div>
+      <div class="result-row"><span>ポイント</span><b id="res-pt">+0</b></div>
+      <p class="result-note">※育てた木の保存は、つぎの段階でできるよ。<br>「もう一回」を押すと、この木は植えられず消えるよ。</p>
+      <div class="result-btns">
+        <button class="btn btn-primary" id="btn-again">もう一回</button>
+        <button class="btn btn-ghost" id="btn-home">スタートへ</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 星（Phase1はプレースホルダー） -->
+  <section class="screen hidden" id="screen-star">
+    <div class="star-placeholder">
+      <h2>⭐ みんなの星</h2>
+      <p>ここに、みんなが育てた木が植わっていくよ。<br>（この画面は次の段階でつくります）</p>
+      <button class="btn btn-ghost" id="btn-star-back">もどる</button>
+    </div>
+  </section>
+
+  <!-- 破棄確認ダイアログ -->
+  <div class="dialog-mask hidden" id="dialog-confirm">
+    <div class="dialog">
+      <p id="dialog-text">育てた木を捨てて、もう一回？</p>
+      <div class="dialog-btns">
+        <button class="btn btn-primary" id="dlg-yes">はい</button>
+        <button class="btn btn-ghost" id="dlg-no">やめる</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
