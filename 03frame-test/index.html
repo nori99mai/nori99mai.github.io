@@ -49,9 +49,11 @@
     <div id="editor" style="display:none">
       <video id="preview" playsinline muted preload="auto" controls></video>
       <div class="scrub-wrap">
-        <div class="scrub-label" id="scrubLabel">決めの瞬間：—</div>
+        <div class="scrub-label" id="startLabel">① 開始位置：—</div>
+        <input type="range" id="startScrub" min="0" max="100" value="0" step="0.05">
+        <div class="scrub-label" id="scrubLabel" style="margin-top:12px">② 決めの瞬間：—</div>
         <input type="range" id="scrub" min="0" max="100" value="100" step="0.05">
-        <div class="note">スライダーを動かして「ここで止めたい！」という瞬間を選んでください。本編はそこまで再生され、その瞬間で静止＋白黒＋鐘が3秒鳴ります。</div>
+        <div class="note">① 前半の不要部分があれば「開始位置」を右にずらしてカット。<br>② 「決めの瞬間」で止めたい所を選ぶ。<br>本編は①〜②が再生され、②で静止＋白黒＋鐘が3秒鳴ります。</div>
       </div>
     </div>
 
@@ -70,7 +72,8 @@
 <script src="vendor/ffmpeg.js"></script>
 <script src="vendor/util.js"></script>
 <script>
-const HOLD = 3; // 静止＋白黒＋鐘を持続させる秒数
+const HOLD = 3;       // 静止＋白黒＋鐘を持続させる秒数
+const MIN_GAP = 0.3;  // 開始位置と決めの瞬間の最低間隔
 const $ = id => document.getElementById(id);
 let ffmpeg = null, chosen = null, lastUrl = null, previewUrl = null, videoDur = 0;
 
@@ -78,8 +81,9 @@ const setStatus = (m) => { $('status').textContent = m; };
 const setProg = (p) => { $('prog').style.width = Math.round(p*100) + '%'; };
 const fmt = (s) => { s = Math.max(0, s); const m = Math.floor(s/60); const r = (s%60).toFixed(1); return `${m}:${r.padStart(4,'0')}`; };
 
-function updateScrubLabel() {
-  $('scrubLabel').textContent = '決めの瞬間：' + fmt(parseFloat($('scrub').value)) + ' / ' + fmt(videoDur);
+function updateLabels() {
+  $('startLabel').textContent = '① 開始位置：' + fmt(parseFloat($('startScrub').value)) + ' / ' + fmt(videoDur);
+  $('scrubLabel').textContent = '② 決めの瞬間：' + fmt(parseFloat($('scrub').value)) + ' / ' + fmt(videoDur);
 }
 
 $('file').addEventListener('change', e => {
@@ -95,12 +99,12 @@ $('file').addEventListener('change', e => {
   pv.load();
   pv.onloadedmetadata = () => {
     videoDur = pv.duration || 0;
-    const sc = $('scrub');
-    sc.max = videoDur.toFixed(2);
-    sc.value = videoDur.toFixed(2);      // 既定は末尾
-    updateScrubLabel();
+    const st = $('startScrub'), sc = $('scrub');
+    st.max = videoDur.toFixed(2); st.value = '0';                 // 既定は先頭
+    sc.max = videoDur.toFixed(2); sc.value = videoDur.toFixed(2); // 既定は末尾
+    updateLabels();
     $('go').disabled = false;
-    setStatus('決めの瞬間を選んで「装飾をつけて書き出す」を押してください。');
+    setStatus('開始位置と決めの瞬間を選んで「装飾をつけて書き出す」を押してください。');
   };
   // フレーム描画を確実にする：一度muted再生→即停止でiOSにフレームを出させ、末尾へシーク
   pv.onloadeddata = async () => {
@@ -117,15 +121,31 @@ function seekPreview(t) {
   try { pv.currentTime = tt; } catch (_) {}
 }
 
+// 決めの瞬間を動かしたとき：開始位置より十分後ろを保つ
 $('scrub').addEventListener('input', () => {
-  seekPreview(parseFloat($('scrub').value));
-  updateScrubLabel();
+  const st = $('startScrub'), sc = $('scrub');
+  if (parseFloat(sc.value) < parseFloat(st.value) + MIN_GAP) {
+    st.value = Math.max(0, parseFloat(sc.value) - MIN_GAP).toFixed(2);
+  }
+  seekPreview(parseFloat(sc.value));   // ②操作中は決めの瞬間をプレビュー
+  updateLabels();
+});
+
+// 開始位置を動かしたとき：決めの瞬間より十分前を保つ
+$('startScrub').addEventListener('input', () => {
+  const st = $('startScrub'), sc = $('scrub');
+  if (parseFloat(st.value) > parseFloat(sc.value) - MIN_GAP) {
+    sc.value = Math.min(videoDur, parseFloat(st.value) + MIN_GAP).toFixed(2);
+  }
+  seekPreview(parseFloat(st.value));   // ①操作中は開始位置をプレビュー
+  updateLabels();
 });
 
 function lockUI(lock) {
   $('go').disabled = lock;
   $('file').disabled = lock;
   $('scrub').disabled = lock;
+  $('startScrub').disabled = lock;
   $('picker').style.pointerEvents = lock ? 'none' : '';
   $('picker').style.opacity = lock ? '0.5' : '';
 }
@@ -170,21 +190,24 @@ async function run() {
     try { await ff.exec(['-hide_banner','-i','in.mp4']); } catch (_) { /* 出力未指定で正常にエラー終了する */ }
     const hasAudio = (window.__fflog || []).some(l => /Stream #0:\d+.*Audio/i.test(l));
 
-    // 決めの瞬間（フリーズ点）
-    const tf = Math.max(0.1, Math.min(videoDur || 9999, parseFloat($('scrub').value) || videoDur));
-    const tfms = Math.round(tf * 1000);
-    const total = (tf + HOLD).toFixed(2);
+    // 開始位置（ts）と決めの瞬間（tf）。本編尺 = tf - ts
+    let ts = Math.max(0, parseFloat($('startScrub').value) || 0);
+    let tf = Math.min(videoDur || 9999, parseFloat($('scrub').value) || videoDur);
+    if (tf - ts < MIN_GAP) ts = Math.max(0, tf - MIN_GAP);   // 最低尺を保証
+    const body = +(tf - ts).toFixed(3);     // トリミング後の本編長（新タイムラインでのフリーズ点）
+    const bodyms = Math.round(body * 1000);
+    const total = (body + HOLD).toFixed(2);
 
     setStatus('装飾を焼き込み中…（スマホだと数十秒かかることがあります）');
 
-    // 本編は決めの瞬間まで再生 → そこで最後のコマを静止＋白黒化＋鐘、HOLD秒持続
-    const vid  = `[0:v]trim=0:${tf},setpts=PTS-STARTPTS,scale=-2:720,tpad=stop_mode=clone:stop_duration=${HOLD},hue=s=0:enable='gte(t,${tf})'[v]`;
-    const bell = `[1:a]adelay=${tfms}|${tfms}[b]`;
+    // [ts,tf]を切り出し→新タイムラインの末尾(body)で静止＋白黒化＋鐘、HOLD秒持続
+    const vid  = `[0:v]trim=${ts}:${tf},setpts=PTS-STARTPTS,scale=-2:720,tpad=stop_mode=clone:stop_duration=${HOLD},hue=s=0:enable='gte(t,${body})'[v]`;
+    const bell = `[1:a]adelay=${bodyms}|${bodyms}[b]`;
     const enc  = ['-c:v','libx264','-preset','ultrafast','-pix_fmt','yuv420p','-crf','23','-c:a','aac','-b:a','128k','-movflags','+faststart','-t',total,'out.mp4'];
 
     let cmd;
     if (hasAudio) {
-      const a0 = `[0:a]atrim=0:${tf},asetpts=PTS-STARTPTS[a0]`;
+      const a0 = `[0:a]atrim=${ts}:${tf},asetpts=PTS-STARTPTS[a0]`;
       cmd = ['-i','in.mp4','-i',bellName,'-filter_complex',
         `${vid};${a0};${bell};[a0][b]amix=inputs=2:duration=longest:normalize=0[a]`,
         '-map','[v]','-map','[a]', ...enc];
