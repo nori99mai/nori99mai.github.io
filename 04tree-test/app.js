@@ -16,12 +16,8 @@ const CONFIG = {
   roundSeconds: 10,            // 1ラウンドの秒数
   stages: 10,                  // 段階数
 
-  // タップ1回あたりの基礎成長量(cm)。コンボ(連打速度)で最大 comboMax 倍まで伸びる
-  growthPerTap: 26,
-  comboMax: 3.0,               // 連打が速いときの成長倍率の上限（mult = 1+combo の上限）
-  comboWindowMs: 280,          // この間隔以内に叩くとコンボが伸びる
-  comboStep: 0.18,             // 1タップごとのコンボ加算
-  comboDecayPerSec: 2.4,       // コンボの減衰（毎秒・実経過時間ベース）
+  // タップ1回の成長量(cm) = growthPerTap × state.tapBoost。コンボ無し＝タップは一定
+  growthPerTap: 46,
 
   cameraFit: 0.72,             // 木を画面高さの何割に収めるか（ズームアウトの効き）
 
@@ -45,11 +41,9 @@ const state = {
   tutorialSeen: false,   // セッション内で初回のみチュートリアル
   running: false,
   taps: 0,
+  tapBoost: 1,           // タップの威力（「+N」表示）。Phase1は1固定。将来、肥料等で+5等に上がる
   growthCm: 0,
   stage: 1,
-  combo: 0,
-  lastTapTime: 0,
-  lastFrameTime: 0,
   endTime: 0,
   rafId: 0,
   countingDown: false,
@@ -102,10 +96,8 @@ const Sound = (() => {
   }
   return {
     unlock: ensure,
-    tap(combo) {
-      // コンボが乗るほど少し高い音（comboの最大は comboMax-1。そこからの割合で音程を決める）
-      const norm = (CONFIG.comboMax - 1) > 0 ? combo / (CONFIG.comboMax - 1) : 0;
-      const f = 520 + Math.min(1, norm) * 210 + Math.random() * 20;
+    tap() {
+      const f = 540 + Math.random() * 20;
       tone(f, 0.10, 'triangle', 0.14);
     },
     grow(level) {
@@ -361,33 +353,23 @@ function beginRound() {
   state.taps = 0;
   state.growthCm = 0;
   state.stage = 1;
-  state.combo = 0;
   const now = performance.now();
-  state.lastTapTime = now;
-  state.lastFrameTime = now;
   state.endTime = now + CONFIG.roundSeconds * 1000;
 
   show('play');
   $('timer').classList.remove('warn');
-  $('combo').classList.remove('show');
   renderTree($('tree-wrap-play'), 1);
   loop();
 }
 
 function loop() {
   const now = performance.now();
-  const frameDt = Math.min(0.1, (now - state.lastFrameTime) / 1000); // 実経過秒(端末fpsに依存しない)
-  state.lastFrameTime = now;
   const remain = Math.max(0, state.endTime - now);
 
   // タイマー表示
   const sec = remain / 1000;
   $('timer').textContent = sec.toFixed(1);
   if (sec <= 3 && state.running) $('timer').classList.add('warn');
-
-  // コンボ減衰（実経過時間ベースで一本化）
-  state.combo = Math.max(0, state.combo - CONFIG.comboDecayPerSec * frameDt);
-  if (state.combo < 0.2) $('combo').classList.remove('show');
 
   if (remain <= 0) { endRound(); return; }
   state.rafId = requestAnimationFrame(loop);
@@ -397,29 +379,14 @@ function onTap() {
   const now = performance.now();
   if (!state.running || now >= state.endTime) return;  // 終了時刻を過ぎたタップは無効(表示と結果のズレ防止)
 
-  // コンボ更新（窓内なら加算。窓外は減衰側に任せる）
-  if (now - state.lastTapTime <= CONFIG.comboWindowMs) {
-    state.combo = Math.min(CONFIG.comboMax - 1, state.combo + CONFIG.comboStep);
-  }
-  state.lastTapTime = now;
   state.taps++;
+  state.growthCm += CONFIG.growthPerTap * state.tapBoost;  // タップ＝一定（tapBoostは将来アイテムで上がる）
 
-  const mult = 1 + state.combo;                       // 1.0 〜 comboMax
-  const gain = Math.round(CONFIG.growthPerTap * mult);
-  state.growthCm += gain;
-
-  // 演出
-  Sound.tap(state.combo);
+  // 演出：「+1」をタップごとに表示
+  Sound.tap();
   bounceTree();
-  floatPlus(gain);
-  spawnParticles(mult > 2 ? 3 : 1);
-
-  // コンボ表示
-  if (state.combo > 0.4) {
-    const c = $('combo');
-    c.textContent = `れんだ ×${mult.toFixed(1)}`;
-    c.classList.add('show');
-  }
+  floatPlus(state.tapBoost);
+  spawnParticles(1);
 
   // 段階アップ判定：一気に飛んでも演出は最終段のみ（多重発火を避ける）
   const newStage = stageForCm(state.growthCm);
