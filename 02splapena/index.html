@@ -118,6 +118,37 @@
       display: block;
     }
 
+    /* ===== ヒーロー右側（画像＋更新告知を縦に束ねる） ===== */
+    .hero-right {
+      display: flex;
+      flex-direction: column;
+    }
+    /* 更新告知（画像直下・1行） */
+    .hero-update {
+      margin-top: 14px;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+      text-decoration: none;
+      width: fit-content;
+    }
+    .hero-update-badge {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
+      letter-spacing: 1px;
+      color: #d6342c;
+    }
+    .hero-update-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--ink-soft);
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 2px;
+      transition: color 0.2s;
+    }
+    .hero-update:hover .hero-update-label { color: var(--ink); }
+
     /* ===== セクション共通 ===== */
     .section {
       padding: 56px 0;
@@ -285,6 +316,54 @@
       color: var(--ink);
     }
 
+    /* ===== 04 アップデート ===== */
+    .update-block {
+      padding-left: 48px;
+    }
+    .update-date {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--ink);
+      margin-bottom: 18px;
+    }
+    .update-lead {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      line-height: 1.9;
+      color: var(--ink);
+      margin-bottom: 28px;
+    }
+    .update-item { margin-bottom: 24px; }
+    .update-item:last-child { margin-bottom: 0; }
+    .update-item-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+    .update-item-body {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      line-height: 2;
+      color: var(--ink-soft);
+    }
+    .update-item-icon {
+      flex: 0 0 16px;
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: var(--ink-soft);
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
     /* ===== フッター ===== */
     .footer {
       padding: 40px 48px;
@@ -328,14 +407,16 @@
         gap: 32px;
         padding-bottom: 48px;
       }
-      .hero-img { order: -1; aspect-ratio: 16/9; }
+      .hero-right { order: -1; }
+      .hero-img { aspect-ratio: 16/9; }
 
       .sec-body,
       .install-block,
       .cmd-table-wrap,
       .cmd-note,
       .pena-block,
-      .pena-closing { padding-left: 0; }
+      .pena-closing,
+      .update-block { padding-left: 0; }
 
       .cmd-table th,
       .cmd-table td { font-size: 11px; }
@@ -374,8 +455,15 @@
         ちょっとした遊びのルール決めにどうぞ！
       </p>
     </div>
-    <div class="hero-img">
-      <img src="demo.png" alt="Random Penalty Bot 動作画面">
+    <div class="hero-right">
+      <div class="hero-img">
+        <img src="demo.png" alt="Random Penalty Bot 動作画面">
+      </div>
+      <!-- 2026.06.22 アップデート告知（画像直下・1行／詳細は04へ） -->
+      <a class="hero-update" href="#update">
+        <span class="hero-update-badge">UP!</span>
+        <span class="hero-update-label">2026.06.22 UPDATE</span>
+      </a>
     </div>
   </div>
 
@@ -440,6 +528,10 @@
           <tr>
             <td>/splapena reset</td>
             <td>ペナルティをデフォルト33件にリセット（サーバー管理者のみ）</td>
+          </tr>
+          <tr>
+            <td>/splapena edit</td>
+            <td>登録ペナルティを1画面で一括編集（サーバー管理者のみ）</td>
           </tr>
         </tbody>
       </table>
@@ -525,6 +617,38 @@
     </div>
 
     <p class="pena-closing">いろんなペナルティを追加／削除してお楽しみください！</p>
+  </section>
+
+  <!-- 04 アップデート -->
+  <section class="section" id="update">
+    <div class="sec-head">
+      <span class="sec-num">04</span>
+      <span class="sec-title">UPDATE</span>
+    </div>
+    <div class="update-block">
+      <div class="update-date">UPDATE — 2026.06.22</div>
+      <p class="update-lead">ペナルティ編集機能の追加と、抽選バランスの改善を行いました。</p>
+
+      <div class="update-item">
+        <div class="update-item-title"><svg class="update-item-icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>出やすさのバランスを改善</div>
+        <p class="update-item-body">カテゴリ（ブキ縛り／動き・操作／ルール／デス時…）ごとに、バランスよく出るようになりました。これまで項目数の多いカテゴリに偏りがちだったのを解消。埋もれていたデス時の言葉系ペナなども、しっかり登場するようになります。</p>
+      </div>
+
+      <div class="update-item">
+        <div class="update-item-title"><svg class="update-item-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>新コマンド /splapena edit を追加</div>
+        <p class="update-item-body">登録ペナルティを 1画面でまとめて編集できるようになりました。[カテゴリ] 内容 の形式で、追加・削除・カテゴリ分けを一括で。1個ずつ追加・削除する手間がなくなります。</p>
+      </div>
+
+      <div class="update-item">
+        <div class="update-item-title"><svg class="update-item-icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>登録上限を最大150件に拡張（旧50件）</div>
+        <p class="update-item-body">たくさんカスタムしても余裕の容量に。一覧が長くなっても、自動で複数メッセージに分けて表示します。</p>
+      </div>
+
+      <div class="update-item">
+        <div class="update-item-title"><svg class="update-item-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>不具合の修正</div>
+        <p class="update-item-body">ペナルティを追加だけして使い始めたサーバーで、初期ペナルティ（デフォルト33件）が出てこないことがある問題を修正しました。</p>
+      </div>
+    </div>
   </section>
 
 </main>
