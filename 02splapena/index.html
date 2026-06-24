@@ -364,17 +364,6 @@
       stroke-linejoin: round;
     }
 
-    /* BOTちゃんのセリフ */
-    .bot-quote {
-      margin: 14px 0;
-      padding: 12px 18px;
-      border-left: 2px solid var(--ink);
-      background: rgba(26, 26, 26, 0.03);
-      font-family: 'Orbitron', sans-serif;
-      font-size: 12px;
-      line-height: 1.9;
-      color: var(--ink);
-    }
     .update-item-body code {
       font-family: 'Courier New', Courier, monospace;
       font-size: 13px;
@@ -771,12 +760,7 @@
       <div class="update-item">
         <div class="update-item-title"><svg class="update-item-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>1. runの前にaddをすると、デフォルトペナが登録されないエラーを修正</div>
         <p class="update-item-body">※6/23 23:00頃に修正を反映しました。</p>
-        <p class="update-item-body">このbotには33種類のデフォルトペナが、5カテゴリに分かれて登録されています。<br>ところが、デフォルトを使う（run）より先にadd（ペナ追加）をすると、BOTちゃんが、</p>
-        <blockquote class="bot-quote">「あ！鯖主さんが追加してくれたペナルティちゃんを優先しなきゃ！」</blockquote>
-        <p class="update-item-body">と判断して、デフォルトペナを取り込まないエラーがありました。<br>（その結果、その鯖にはデフォルトが1つも入っていない状態に…！）</p>
-        <p class="update-item-body">現在はBOTちゃんに、</p>
-        <blockquote class="bot-quote">「addのときも、デフォルトペナも鯖主さんペナも、ちゃんと両方活かしてね」</blockquote>
-        <p class="update-item-body">と教育済みです。<br>ただし、6/16〜6/24にこの操作をしてしまった鯖は、すでにデフォルトが入っていない場合があります。その場合は、下のedit機能で復元できます ↓</p>
+        <p class="update-item-body">このbotには33種類のデフォルトペナが、5カテゴリに分かれて登録されています。<br>ところが、デフォルトを使う（run）より先にadd（ペナ追加）をすると、BOTちゃんが、<br><br>「あ！鯖主さんが追加してくれたペナルティちゃんを優先しなきゃ！」<br>と判断して、デフォルトペナを取り込まないエラーがありました。<br>（その結果、その鯖にはデフォルトが1つも入っていない状態に…！）<br><br>現在はBOTちゃんに、<br><br>「addのときも、デフォルトペナも鯖主さんペナも、ちゃんと両方活かしてね」<br>と教育済みです。<br>ただし、6/16〜6/24にこの操作をしてしまった鯖は、すでにデフォルトが入っていない場合があります。その場合は、下のedit機能で復元できます ↓</p>
       </div>
 
       <!-- 2. edit機能 -->
