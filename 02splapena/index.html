@@ -364,6 +364,144 @@
       stroke-linejoin: round;
     }
 
+    /* BOTちゃんのセリフ */
+    .bot-quote {
+      margin: 14px 0;
+      padding: 12px 18px;
+      border-left: 2px solid var(--ink);
+      background: rgba(26, 26, 26, 0.03);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      line-height: 1.9;
+      color: var(--ink);
+    }
+    .update-item-body code {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    /* デフォルト一覧ポップアップを開くボタン */
+    .pena-copy-open {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 18px;
+      padding: 12px 22px;
+      background: var(--paper);
+      color: var(--ink);
+      border: 1px solid var(--ink);
+      cursor: pointer;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 2px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .pena-copy-open:hover { background: var(--ink); color: var(--paper); }
+
+    /* ===== ポップアップ（デフォルト一覧コピペ用） ===== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(26, 26, 26, 0.55);
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      width: 100%;
+      max-width: 560px;
+      max-height: 86vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--paper);
+      border: 1px solid var(--ink);
+    }
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--line);
+    }
+    .modal-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--ink);
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 22px;
+      line-height: 1;
+      color: var(--ink-soft);
+      transition: color 0.2s;
+    }
+    .modal-close:hover { color: var(--ink); }
+    .modal-body {
+      padding: 18px 22px 22px;
+      overflow-y: auto;
+    }
+    .modal-note {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      line-height: 1.9;
+      color: var(--ink-soft);
+      margin-bottom: 14px;
+    }
+    .modal-textarea {
+      width: 100%;
+      height: 38vh;
+      min-height: 220px;
+      resize: vertical;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      background: rgba(26, 26, 26, 0.02);
+      color: var(--ink);
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .modal-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .modal-copy {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 24px;
+      background: var(--ink);
+      color: var(--paper);
+      border: none;
+      cursor: pointer;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 2px;
+      transition: opacity 0.2s;
+    }
+    .modal-copy:hover { opacity: 0.7; }
+    .modal-copied {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: var(--ink-soft);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .modal-copied.show { opacity: 1; }
+
     /* ===== フッター ===== */
     .footer {
       padding: 40px 48px;
@@ -459,10 +597,10 @@
       <div class="hero-img">
         <img src="demo.png" alt="Random Penalty Bot 動作画面">
       </div>
-      <!-- 2026.06.22 アップデート告知（画像直下・1行／詳細は04へ） -->
+      <!-- 2026.06.23 アップデート告知（画像直下・1行／詳細は04へ） -->
       <a class="hero-update" href="#update">
         <span class="hero-update-badge">UP!</span>
-        <span class="hero-update-label">2026.06.22 UPDATE</span>
+        <span class="hero-update-label">2026.06.23 UPDATE</span>
       </a>
     </div>
   </div>
@@ -586,9 +724,9 @@
       <div class="pena-grid">
         <div class="pena-item"><span class="pena-num">19</span>ルール関与禁止</div>
         <div class="pena-item"><span class="pena-num">20</span>ルール関与のみしてよい（塗りはOK、キルはNG）</div>
-        <div class="pena-item"><span class="pena-num">21</span>セルフペナアップ（リス後3秒待機）</div>
+        <div class="pena-item"><span class="pena-num">21</span>セルフペナアップ（リス後、3秒してから行動開始）</div>
         <div class="pena-item"><span class="pena-num">22</span>キルを取ったら3秒間その場で煽り行為</div>
-        <div class="pena-item"><span class="pena-num">23</span>デスしたらリス時に最前線の味方にジャンプする</div>
+        <div class="pena-item"><span class="pena-num">23</span>デスしたらリス時に最前線の味方にジャンプする（連続無し）</div>
         <div class="pena-item"><span class="pena-num">24</span>好きなペナルティを誰か一人に押しつけ</div>
       </div>
     </div>
@@ -626,32 +764,98 @@
       <span class="sec-title">UPDATE</span>
     </div>
     <div class="update-block">
-      <div class="update-date">UPDATE — 2026.06.22</div>
-      <p class="update-lead">ペナルティ編集機能の追加と、抽選バランスの改善を行いました。</p>
+      <div class="update-date">UPDATE — 2026.06.23</div>
+      <p class="update-lead">不具合の修正・新機能の追加・抽選バランスの改善を行いました。</p>
 
+      <!-- 1. 不具合修正 -->
       <div class="update-item">
-        <div class="update-item-title"><svg class="update-item-icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>出やすさのバランスを改善</div>
-        <p class="update-item-body">カテゴリ（ブキ縛り／動き・操作／ルール／デス時…）ごとに、バランスよく出るようになりました。これまで項目数の多いカテゴリに偏りがちだったのを解消。埋もれていたデス時の言葉系ペナなども、しっかり登場するようになります。</p>
+        <div class="update-item-title"><svg class="update-item-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>1. runの前にaddをすると、デフォルトペナが登録されないエラーを修正</div>
+        <p class="update-item-body">※6/23 23:00頃に修正を反映しました。</p>
+        <p class="update-item-body">このbotには33種類のデフォルトペナが、5カテゴリに分かれて登録されています。<br>ところが、デフォルトを使う（run）より先にadd（ペナ追加）をすると、BOTちゃんが、</p>
+        <blockquote class="bot-quote">「あ！鯖主さんが追加してくれたペナルティちゃんを優先しなきゃ！」</blockquote>
+        <p class="update-item-body">と判断して、デフォルトペナを取り込まないエラーがありました。<br>（その結果、その鯖にはデフォルトが1つも入っていない状態に…！）</p>
+        <p class="update-item-body">現在はBOTちゃんに、</p>
+        <blockquote class="bot-quote">「addのときも、デフォルトペナも鯖主さんペナも、ちゃんと両方活かしてね」</blockquote>
+        <p class="update-item-body">と教育済みです。<br>ただし、6/16〜6/24にこの操作をしてしまった鯖は、すでにデフォルトが入っていない場合があります。その場合は、下のedit機能で復元できます ↓</p>
       </div>
 
+      <!-- 2. edit機能 -->
       <div class="update-item">
-        <div class="update-item-title"><svg class="update-item-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>新コマンド /splapena edit を追加</div>
-        <p class="update-item-body">登録ペナルティを 1画面でまとめて編集できるようになりました。[カテゴリ] 内容 の形式で、追加・削除・カテゴリ分けを一括で。1個ずつ追加・削除する手間がなくなります。</p>
+        <div class="update-item-title"><svg class="update-item-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>2.（新機能）edit機能を実装</div>
+        <p class="update-item-body">登録されているペナルティを一覧で編集できる機能を付けました。<br><code>/splapena edit</code> を実行して、下のデフォルトペナ一覧を貼り付けて登録することも可能です。<br>ちなみにここでペナルティの一括編集もできちゃいます！</p>
+        <button class="pena-copy-open" type="button" data-modal-open>【デフォルトペナ一覧】を開く（コピペ用） &rarr;</button>
       </div>
 
+      <!-- 3. 登録上限拡張 -->
       <div class="update-item">
-        <div class="update-item-title"><svg class="update-item-icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>登録上限を最大150件に拡張（旧50件）</div>
+        <div class="update-item-title"><svg class="update-item-icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>3. 登録上限を最大150件に拡張</div>
         <p class="update-item-body">たくさんカスタムしても余裕の容量に。一覧が長くなっても、自動で複数メッセージに分けて表示します。</p>
       </div>
 
+      <!-- 4. 出現率調整 -->
       <div class="update-item">
-        <div class="update-item-title"><svg class="update-item-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>不具合の修正</div>
-        <p class="update-item-body">ペナルティを追加だけして使い始めたサーバーで、初期ペナルティ（デフォルト33件）が出てこないことがある問題を修正しました。</p>
+        <div class="update-item-title"><svg class="update-item-icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>4. 出現率の調整について</div>
+        <p class="update-item-body">「好きなペナルティを誰かに押し付けられる」これはスペシャルなjokerカードとして用意したものですが、実際に試してみたら結構な確率で出現しておりました笑</p>
+        <p class="update-item-body">その他にもいろいろなペナルティを登録していくと、母数が増えていくため全く出てこなくなるペナルティが出てきてしまう問題がありました。</p>
+        <p class="update-item-body">この2つの課題解決のために、下記の修正をしています。<br>・最初に、各ペナルティのカテゴリをランダムで選ぶ。<br>・次に、選ばれたカテゴリ内でランダムでペナルティを選択。</p>
+        <p class="update-item-body">こうすることで色々なペナルティの出現率を調整、またこの調整の上でjokerの出現率のみ少し下げております。</p>
       </div>
     </div>
   </section>
 
 </main>
+
+<!-- ===== デフォルト一覧コピペ用ポップアップ ===== -->
+<div class="modal-overlay" id="penaModal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="デフォルトペナ一覧（コピペ用）">
+    <div class="modal-head">
+      <span class="modal-title">DEFAULT PENALTIES — コピペ用</span>
+      <button class="modal-close" type="button" data-modal-close aria-label="閉じる">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-note">
+        下の枠をコピーして、Discordで <code style="font-family:'Courier New',monospace;font-weight:700;">/splapena edit</code> を実行 → 編集欄に貼り付けると、デフォルト33件をそのまま復元できます。
+      </p>
+      <textarea class="modal-textarea" id="penaText" readonly>[ブキ縛り] ショクワンダーブキを使う
+[ブキ縛り] 竹ブキ使用
+[ブキ縛り] アメフラシブキを使う
+[ブキ縛り] シューター種のどれかを使用
+[ブキ縛り] ブラスター種のどれかを使用
+[ブキ縛り] ローラー種のどれかを使用
+[ブキ縛り] フデ種のどれかを使用
+[ブキ縛り] スピナー種のどれかを使用
+[ブキ縛り] シェルター種のどれかを使用
+[ブキ縛り] 弓種のどれかを使用
+[動き・操作] イカ状態禁止
+[動き・操作] ジャンプ禁止
+[動き・操作] マニュ系ブキでスライド禁止
+[動き・操作] ヒト状態禁止（攻撃時除く）
+[動き・操作] サブ禁止
+[動き・操作] スーパージャンプ禁止
+[動き・操作] ジャイロを-5にする
+[動き・操作] 立ってプレイ
+[ルール・立ち回り] ルール関与禁止
+[ルール・立ち回り] ルール関与のみしてよい（塗りはOK、キルはNG）
+[ルール・立ち回り] セルフペナアップ（リス後、3秒してから行動開始）
+[ルール・立ち回り] キルを取ったら3秒間その場で煽り行為
+[ルール・立ち回り] デスしたらリス時に最前線の味方にジャンプする（連続無し）
+[ルール・立ち回り] 好きなペナルティを誰か一人に押しつけ
+[デス時・行動] デスしたら腹筋3回
+[デス時・行動] デスしたらスクワット3回
+[デス時・行動] デスしたら腕立て3回
+[デス時・言語] デスしたら次のデスまでお嬢様言葉を話す
+[デス時・言語] デスしたら次のデスまで語尾にゃん
+[デス時・言語] デスしたら次のデスまでお礼を言う
+[デス時・言語] デスしたら次のデスまでにゃーしか言えない
+[デス時・言語] デスしたら次のデスまでバブ語を使う
+[デス時・言語] デスしたら次のデスまでシオカラ節を歌う</textarea>
+      <div class="modal-actions">
+        <button class="modal-copy" type="button" id="penaCopyBtn">一覧をコピー</button>
+        <span class="modal-copied" id="penaCopied">コピーしました！</span>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ===== フッター ===== -->
 <footer class="footer">
@@ -659,6 +863,46 @@
   <span class="footer-copy">&copy; 2026 nori99mai. All rights reserved.</span>
   <a class="footer-back" href="../">&larr; BACK TO INDEX</a>
 </footer>
+
+<script>
+  (function () {
+    const overlay = document.getElementById('penaModal');
+    const openBtns = document.querySelectorAll('[data-modal-open]');
+    const closeEls = document.querySelectorAll('[data-modal-close]');
+    const copyBtn = document.getElementById('penaCopyBtn');
+    const textArea = document.getElementById('penaText');
+    const copied = document.getElementById('penaCopied');
+
+    function open() {
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden', 'false');
+    }
+    function close() {
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+      copied.classList.remove('show');
+    }
+
+    openBtns.forEach(b => b.addEventListener('click', open));
+    closeEls.forEach(b => b.addEventListener('click', close));
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+
+    copyBtn.addEventListener('click', async () => {
+      const text = textArea.value;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (err) {
+        // 古い端末/非HTTPS向けフォールバック
+        textArea.focus();
+        textArea.select();
+        try { document.execCommand('copy'); } catch (_) {}
+      }
+      copied.classList.add('show');
+      setTimeout(() => copied.classList.remove('show'), 2000);
+    });
+  })();
+</script>
 
 </body>
 </html>
