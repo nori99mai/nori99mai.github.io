@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スプラ反省アプリ｜やらかし項目レビュー</title>
+<style>
+  :root{
+    --ink:#1a1a1a; --soft:#5a5a5a; --faint:#8a8a8a;
+    --paper:#fafafa; --card:#ffffff; --line:rgba(26,26,26,.12);
+    --accent:#e84d2e; --accent2:#2e7de8; --good:#1f9d57;
+    --shadow:0 1px 3px rgba(0,0,0,.06),0 6px 16px rgba(0,0,0,.05);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",sans-serif;
+    background:var(--paper); color:var(--ink);
+    line-height:1.6; -webkit-text-size-adjust:100%;
+    padding:0 0 60px;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:0 16px;}
+
+  /* ヘッダー */
+  header{
+    background:var(--ink); color:#fff;
+    padding:28px 0 24px; margin-bottom:8px;
+  }
+  header .wrap{max-width:760px;}
+  .eyebrow{font-size:11px; letter-spacing:3px; color:#bdbdbd; font-weight:700;}
+  h1{font-size:21px; font-weight:800; margin:6px 0 4px; letter-spacing:.5px;}
+  .sub{font-size:12px; color:#cfcfcf;}
+  .draft-tag{
+    display:inline-block; margin-top:12px; font-size:11px; font-weight:700;
+    background:var(--accent); color:#fff; padding:3px 10px; border-radius:99px; letter-spacing:1px;
+  }
+
+  /* イントロ */
+  .intro{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:18px 18px 16px; margin:16px 0; box-shadow:var(--shadow);
+  }
+  .intro h2{font-size:14px; letter-spacing:1px; margin-bottom:8px;}
+  .intro p{font-size:13.5px; color:var(--soft); margin-bottom:10px;}
+  .points{list-style:none; counter-reset:p; margin:6px 0 0;}
+  .points li{
+    position:relative; padding:8px 0 8px 34px; font-size:13.5px;
+    border-top:1px dashed var(--line);
+  }
+  .points li:first-child{border-top:none;}
+  .points li::before{
+    counter-increment:p; content:counter(p);
+    position:absolute; left:0; top:8px;
+    width:22px; height:22px; border-radius:50%;
+    background:var(--ink); color:#fff; font-size:12px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .points b{color:var(--ink);}
+  .note-box{
+    margin-top:12px; font-size:12.5px; color:var(--soft);
+    background:#fff7f4; border:1px solid #f3d2c8; border-left:4px solid var(--accent);
+    border-radius:8px; padding:10px 12px;
+  }
+
+  /* 凡例 */
+  .legend{
+    display:flex; gap:8px; flex-wrap:wrap; font-size:12px; color:var(--soft);
+    margin:2px 0 0;
+  }
+  .legend span{background:#f0f0f0; border-radius:6px; padding:3px 9px;}
+  .legend b{color:var(--ink);}
+
+  /* カテゴリ */
+  .cat{margin:26px 0 0;}
+  .cat-head{
+    display:flex; align-items:center; gap:10px;
+    font-size:15px; font-weight:800; margin-bottom:12px; letter-spacing:.5px;
+  }
+  .cat-num{
+    flex:none; width:26px; height:26px; border-radius:8px;
+    background:var(--accent); color:#fff; font-size:13px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .cat-head small{font-size:11.5px; font-weight:600; color:var(--faint); letter-spacing:0;}
+
+  /* 項目カード */
+  .item{
+    background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:12px 14px; margin-bottom:10px; box-shadow:var(--shadow);
+  }
+  .item-top{display:flex; align-items:flex-start; gap:10px;}
+  .code{
+    flex:none; font-size:11px; font-weight:800; color:var(--accent);
+    background:#fdeee9; border-radius:6px; padding:3px 7px; letter-spacing:.5px;
+    margin-top:1px; min-width:38px; text-align:center;
+  }
+  .label{font-size:14.5px; font-weight:700; flex:1;}
+  .hint{
+    font-size:12.5px; color:var(--soft); margin:6px 0 0; padding-left:48px;
+    position:relative;
+  }
+  .meta-row{
+    display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 0; padding-left:48px;
+  }
+  .chip{
+    font-size:10.5px; padding:2px 8px; border-radius:99px;
+    background:#eef2f7; color:var(--accent2); font-weight:700;
+  }
+  .chip.scope{background:#eefaf2; color:var(--good);}
+  .chip.cnt{background:#f3f3f3; color:var(--soft);}
+  @media(max-width:480px){
+    .hint,.meta-row{padding-left:0;}
+  }
+
+  /* 議論セクション */
+  .discuss{
+    background:#f4f7fb; border:1px solid #d8e3f0; border-radius:14px;
+    padding:16px 18px; margin:30px 0 0;
+  }
+  .discuss h2{font-size:14px; margin-bottom:8px;}
+  .discuss h2 .ic{margin-right:6px;}
+  .discuss ul{margin:6px 0 0 18px; font-size:13px; color:var(--soft);}
+  .discuss li{margin-bottom:7px;}
+  .discuss + .discuss{margin-top:14px; background:#f6f6f6; border-color:var(--line);}
+
+  footer{
+    text-align:center; font-size:11.5px; color:var(--faint);
+    margin-top:34px; line-height:1.8;
+  }
+  footer .thanks{font-size:13px; color:var(--soft); font-weight:700; margin-bottom:6px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">SPLATOON 3 / 反省アプリ</div>
+    <h1>やらかし項目リスト</h1>
+    <div class="sub">上位勢レビュー用 ／ 対象：XP2000の壁を越えるための基礎</div>
+    <span class="draft-tag">DRAFT-2 ・ 2026-06-29</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- イントロ -->
+  <section class="intro">
+    <h2>これは何？</h2>
+    <p>初心者が自分のリプレイ（メモリープレイヤー）を見返して、「やらかし」をボタンでポチって記録 → 弱点傾向を集計するアプリの、<b>チェック項目リスト</b>です。多数の添削動画から「XP2000到達に必要な“できて当然の基礎”」を抜き出し、<b>初心者が一目で『あ、これやった』と分かる最小単位</b>に分解しました。</p>
+
+    <h2 style="margin-top:14px;">見ていただきたい2点</h2>
+    <ul class="points">
+      <li><b>的外れでないか</b> … XP2000到達の基礎としてズレていないか</li>
+      <li><b>抜けはないか</b> … 定番のやらかしで抜けているものはないか</li>
+    </ul>
+
+    <div class="note-box">
+      あえて多め（<b>25個</b>）に出しています。「足す」より <b>「消す・直す・統合する」</b> 視点で見てもらえると助かります。<br>
+      各項目に <b>○=残す / △=直したい / ✕=消す</b> ＋一言コメント（直し案・統合案など）をいただけると最高です。
+    </div>
+    <p style="font-size:12px; color:var(--faint); margin:10px 0 0; line-height:1.7;">
+      ※各項目の <b style="color:var(--soft);">「言及◯」</b> ＝ 参考にした添削動画群のうち、その項目に触れていた本数の目安です（多いほど“定番のやらかし”）。重要度の参考値で、確定ではありません。
+    </p>
+  </section>
+
+  <!-- ===== カテゴリ1 ===== -->
+  <section class="cat">
+    <div class="cat-head"><span class="cat-num">1</span>戦況把握 <small>マップ・イカランプ・カウントを見る</small></div>
+
+    <div class="item">
+      <div class="item-top"><span class="code">1-1</span><span class="label">デス中にマップを1秒も開かなかった</span></div>
+      <div class="hint">デス〜復帰までマップが一度も出ていない</div>
+      <div class="meta-row"><span class="chip cnt">言及 5</span></div>
+    </div>
+    <div class="item">
+      <div class="item-top"><span class="code">1-2</span><span class="label">敵のビーコンをマップで見逃した</span></div>
+      <div class="hint">ビーコンを確認せず近くに復帰した</div>
+      <div class="meta-row"><span class="chip cnt">言及 4</span></div>
+    </div>
+    <div class="item">
+      <div class="item-top"><span class="code">1-3</span><span class="label">敵のしぶき（移動跡）を見逃した</span></div>
+      <div class="hint">画面端の敵しぶきに気づかず横から撃たれた</div>
+      <div class="meta-row"><span class="chip cnt">言及 3</span></div>
+    </div>
+    <div class="item">
+      <div class="item-top"><span class="code">1-4</span><span class="label">リード中なのに無理な対面でデスした</span></div>
+      <div class="hint">リード残り数秒で引かず戦いデス</div>
+      <div class="meta-row"><span class="chip cnt">言及 3</span></div>
+    </div>
+  </section>
+
+  <!-- ===== カテゴリ2 ===== -->
+  <section class="cat">
+    <div class="cat-head"><span class="cat-num">2</span>人数把握 <small>人数有利／不利の認識</small></div>
+
+    <div class="item">
+      <div class="item-top"><span class="code">2-1</span><span class="label">味方の全落ちに気づかず突っ込んだ</span></div>
+      <div class="hint">イカランプが自分一人なのに中央で戦い続けデス</div>
+      <div class="meta-row"><span class="chip cnt">言及 6</span></div>
+    </div>
+    <div class="item">
+      <div class="item-top"><span class="code">2-2</span><span class="label">人数有利なのに自陣側を塗り続けた</span></div>
+      <div class="hint">敵2枚以上落ちなのに前進せず足元塗り</div>
+      <div class="meta-row"><span class="chip cnt">言及 5</span></div>
+    </div>
+    <div class="item">
+      <div class="item-top"><span class="code">2-3</span><span class="label">人数不利なのに引かずに撃ち合った</span></div>
+      <div class="hint">×2以上の不利で引かずデス</div>
+      <div class="meta-row"><span class="chip cnt">言及 4</span></div>
+    </div>
+  </section>
+
+  <!-- ===== カテゴリ3 ===== -->
+  <section class="cat">
+    <div class="cat-head"><span class="cat-num">3</span>対面・撃ち合い <small>エイム・ジャンプ撃ち・射程・遮蔽</small></div>
+
+    <div class="item">
+      <div class="item-top"><span class="code">3-1</span><span class="label">クセで意味のないジャンプ撃ちをした</span></div>
+      <div class="hint">至近で跳ねながら撃ち弾を外した</div>
+      <div class="meta-row"><span class="chip cnt">言及 5</span><span class="chip scope">シューター系</span></div>
+    </div>
+    <div class="item">
+      <div class="item-top"><span class="code">3-2</span><span class="label">遮蔽物がない平地で撃ち合った</span></div>
+      <div class="hint">壁/高台があるのに何もない場所で足を止め撃った</div>
+      <div class="meta-row"><span class="chip cnt">言及 4</span></div>
+    </div>
+    <div class="item">
+      <div class="item-top"><span class="code">3-3</span><span class="label">射程負けの敵に正面から挑んだ</span></div>
+      <div class="hint">長射程の敵正面にボムも投げず向かった</div>
+      <div class="meta-row"><span class="chip cnt">言及 4</span></div>
+    </div>
+    <div class="item">
+      <div class="item-top"><span class="code">3-4</span><span class="label">倒せない敵を5秒以上追いかけた</span></div>
+      <div class="hint">1人を追い続け横からカバーされた</div>
+      <div class="meta-row"><span class="chip cnt">言及 3</span></div>
+    </div>
+    <div class="item">
+      <div class="item-top"><span class="code">3-5</span><span class="label">撃ち続けながら人状態で敵に近づいた</span></div>
+      <div class="hint">潜伏/イカ移動を使わず人状態で撃ち接近</div>
+      <div class="meta-row"><span class="chip cnt">言及 2</span></div>
+    </div>
+  </section>
+
+  <!-- ===== カテゴリ4 ===== -->
+  <section class="cat">
+    <div class="cat-head"><span class="cat-num">4</span>位置取り・ライン <small>前に出る／引く・高台・裏取り</small></div>
+
+    <div class="item">
+      <div class="item-top"><span class="code">4-1</span><span class="label">ワイプアウト後に敵高台を奪わなかった</span></div>
+      <div class="hint">敵全落ち後も自陣付近に留まり敵高台へ行かない</div>
+      <div class="meta-row"><span class="chip cnt">言及 3</span></div>
+    </div>
+    <div class="item">
+      <div class="item-top"><span class="code">4-2</span><span class="label">初動で中央に行かず自陣を塗り歩いた</span></div>
+      <div class="hint">開始20秒、中央エリアに一度も触れない</div>
+      <div class="meta-row"><span class="chip cnt">言及 3</span></div>
+    </div>
+    <div class="item">
+      <div class="item-top"><span class="code">4-3</span><span class="label">段差下を確認せず飛び降りた</span></div>
+      <div class="hint">段差下にボム/メインを振らず降り潜伏にやられた</div>
+      <div class="meta-row"><span class="chip cnt">言及 2</span></div>
+    </div>
+  </section>
+
+  <!-- ===== カテゴリ5 ===== -->
+  <section class="cat">
+    <div class="cat-head"><span class="cat-num">5</span>引き際・デス管理 <small>深追い・生存・復帰</small></div>
+
+    <div class="item">
+      <div class="item-top"><span class="code">5-1</span><span class="label">スペシャルが無いのに打開で突っ込んだ</span></div>
+      <div class="hint">打開でゲージが溜まる前にメインで挑みデス</div>
+      <div class="meta-row"><span class="chip cnt">言及 5</span></div>
+    </div>
+    <div class="item">
+      <div class="item-top"><span class="code">5-2</span><span class="label">敵インクに囲まれた味方に飛んだ</span></div>
+      <div class="hint">味方の足元が敵色なのにジャンプ</div>
+      <div class="meta-row"><span class="chip cnt">言及 3</span></div>
+    </div>
+    <div class="item">
+      <div class="item-top"><span class="code">5-3</span><span class="label">無謀なスーパージャンプで着地狩りされた</span></div>
+      <div class="hint">敵密集の近くに飛び着地狩り</div>
+      <div class="meta-row"><span class="chip cnt">言及 2</span></div>
+    </div>
+  </section>
+
+  <!-- ===== カテゴリ6 ===== -->
+  <section class="cat">
+    <div class="cat-head"><span class="cat-num">6</span>塗り・スペシャル管理</div>
+
+    <div class="item">
+      <div class="item-top"><span class="code">6-1</span><span class="label">インク切れなのにメインを振ろうとした</span></div>
+      <div class="hint">対面中にインク切れ表示で棒立ちデス</div>
+      <div class="meta-row"><span class="chip cnt">言及 4</span></div>
+    </div>
+    <div class="item">
+      <div class="item-top"><span class="code">6-2</span><span class="label">スペシャルを抱えたままデスした</span></div>
+      <div class="hint">ゲージ満タンなのに発動せず倒された</div>
+      <div class="meta-row"><span class="chip cnt">言及 4</span></div>
+    </div>
+    <div class="item">
+      <div class="item-top"><span class="code">6-3</span><span class="label">ボム後にその場で休憩して足を止めた</span></div>
+      <div class="hint">ボム後インク回復だけで1秒以上静止</div>
+      <div class="meta-row"><span class="chip cnt">言及 3</span></div>
+    </div>
+  </section>
+
+  <!-- ===== カテゴリ7 ===== -->
+  <section class="cat">
+    <div class="cat-head"><span class="cat-num">7</span>オブジェクト・カウント関与 <small>ルール別</small></div>
+
+    <div class="item">
+      <div class="item-top"><span class="code">7-1</span><span class="label">ヤグラ/ホコを味方任せで放置した</span></div>
+      <div class="hint">自分以外が前線なのに乗らず塗り継続</div>
+      <div class="meta-row"><span class="chip cnt">言及 4</span><span class="chip">対象：ヤグラ・ホコ</span></div>
+    </div>
+    <div class="item">
+      <div class="item-top"><span class="code">7-2</span><span class="label">アサリ集めに夢中で敵を見ていない</span></div>
+      <div class="hint">近くに敵がいるのに下を向き拾い続けデス</div>
+      <div class="meta-row"><span class="chip cnt">言及 3</span><span class="chip">対象：アサリ</span></div>
+    </div>
+  </section>
+
+  <!-- ===== カテゴリ8 ===== -->
+  <section class="cat">
+    <div class="cat-head"><span class="cat-num">8</span>味方連携・カバー</div>
+
+    <div class="item">
+      <div class="item-top"><span class="code">8-1</span><span class="label">近くで戦う味方を無視して別所を塗った</span></div>
+      <div class="hint">隣で味方が対面中なのに助けに行かない</div>
+      <div class="meta-row"><span class="chip cnt">言及 4</span></div>
+    </div>
+    <div class="item">
+      <div class="item-top"><span class="code">8-2</span><span class="label">エナスタを飲んだのに後ろに引き続けた</span></div>
+      <div class="hint">エナスタ効果中なのに射程ギリで戦い前に出ない</div>
+      <div class="meta-row"><span class="chip cnt">言及 3</span><span class="chip scope">エナジースタンド</span></div>
+    </div>
+  </section>
+
+  <!-- ===== 除外したもの ===== -->
+  <section class="discuss">
+    <h2><span class="ic">🗑</span>あえて入れなかったもの（異議があれば教えてください）</h2>
+    <ul>
+      <li><b>超初心者向け</b>（卒業済み前提）：ステージ散歩での把握 ／ ヒーローモードクリア ／ ジャイロ操作への変更</li>
+      <li><b>X2500+の高度テク・ニッチ</b>：1秒未満のマップ瞬間確認 ／ バケツのリズム打ち ／ 味方SPの秒数管理 ／ 精密な慣性キャンセル・雷神ステップ</li>
+    </ul>
+  </section>
+
+  <footer>
+    <div class="thanks">ご協力ありがとうございます！</div>
+    ○△✕とコメントをいただければ、それを基に確定版（アプリのボタン）にします。<br>
+    ※このページはレビュー用の一時公開ページです。
+  </footer>
+
+</div>
+</body>
+</html>
